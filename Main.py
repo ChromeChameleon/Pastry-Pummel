@@ -9,20 +9,30 @@ class Driver():
     def __init__(self):
         self.players = []
     
-    def make_team(self):
-        pass #test
+    def setupPlayers(self):
+        starting_pos = 100 #yes ik very scuffed will be changed later
+        for i in range(1,3): #two players as I don't want to go insane
+            p = Player(f"p{i}")
+            p.make_team(4,starting_pos) #creates 4 units
+            self.players.append(p)
+            starting_pos = WIDTH - starting_pos #insane math
     
 class Player():
-    """the player itself"""
+    """the player itself
+    
+    Attrtibutes
+    -------------
+    team: Str that represents which team the player is on
+    units: a List that represents every unit that belongs to the player
+    """
     
     def __init__(self,team):
         self.team = team #team eg player 1 or 2
         self.units = [] # list of unit objects
-    def arrange(self):
-        pass #test
         
-    def make_team(self, units):
-        xpos = 100
+    def make_team(self, units,starting_pos):
+        """takes the # of units and their starting positions and creates a team of units"""
+        xpos = starting_pos
         ypos = 100
         for i in range(units):
             self.units.append(Unit(xpos, ypos, 40, 'penguinoes'))
@@ -35,10 +45,10 @@ class Unit():
     '''
     Attributes
     ----------
-    x:
-    y:
-    vx:
-    vy:
+    x: Int value that represents the x position of the unit
+    y: Int value that represents the y position of the unit
+    vx: Int value that represents the x speed of the unit
+    vy: Int value that represents the y speed of the unit
     mass
     radius
     colour
@@ -48,8 +58,8 @@ class Unit():
         self.y = y
         self.mass = mass
         self.actor = Actor(actor)
-        self.actor.x = self.x
-        self.actor.y = self.y
+#         self.actor.x = self.x
+#         self.actor.y = self.y (technically unnessary as you have a move method)
         self.vx = 0
         self.vy = 0
 #         self.radius = radius
@@ -65,18 +75,23 @@ class Unit():
         self.vx = vx
         self.vy = vy
 
-u1 = Unit(WIDTH/2, HEIGHT/2, 40, 'penguinoes')
-p1 = Player("red")
-p1.make_team(4)
+#u1 = Unit(WIDTH/2, HEIGHT/2, 40, 'penguinoes')
+#p1 = Player("red")
+#p1.make_team(4)
+admin = Driver()
+admin.setupPlayers()
 def draw():
     screen.clear()
     screen.fill((50,100,150))
-    for unit in p1.units:
-        unit.actor.draw()
-        
+    for players in admin.players:
+        for unit in players.units:
+            unit.actor.draw()
+            
 def update():
     pass
-    
+    for players in admin.players:
+        for unit in players.units:
+            unit.move(randint(-10,10),randint(-10,10))
     #for unit in p1.units:
         #x = randint(-10,10)
         #y = randint(-10,10)
