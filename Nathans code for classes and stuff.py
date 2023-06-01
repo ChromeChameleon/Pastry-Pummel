@@ -20,7 +20,7 @@ class Player():
         self.team = team #team eg player 1 or 2
         self.units = [] # list of unit objects
     def arrange(self):
-        pass
+        pass #test
         
     def make_team(self, units):
         xpos = 100
