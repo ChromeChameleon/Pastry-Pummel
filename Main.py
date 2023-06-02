@@ -71,9 +71,54 @@ class Unit():
         self.actor.y = self.y
        # print(self.x, self.y, self.actor.x, self.actor.y)
     
-    def update_v(vx,vy):
+    def update_v(self, vx,vy):
         self.vx = vx
         self.vy = vy
+        
+    def collision_calc(self, m2):
+        '''
+        takes in a another unit object which the unit is colliding with and
+        calculates their resultant velocities. It then updates the velocity
+        attributes of the units.
+        
+        Parameters
+        ----------
+        m2: unit object
+            the unit that is being collided with
+        '''
+        m1mass = self.mass
+        m2mass = m2.mass
+        #x direction
+        v1ix = self.vx
+        v2ix = m2.vx
+        #set m2 frame of reference
+        v1ix -= v2ix
+        v2ix = 0
+        
+        v1fx = v1ix*((m1mass-m2mass)/(m1mass+m2mass))
+        v2fx = (2*m1mass*v1ix)/(m1mass+m2mass)
+        
+        #set back to global f.o.r
+        v1fx += m2.vx
+        v2fx += m2.vx
+        
+        
+        #y direction
+        v1iy = self.vy
+        v2iy = m2.vy
+        #set m2 frame of reference
+        v1iy -= v2iy
+        v2iy = 0
+        
+        v1fy = v1iy*((m1mass-m2mass)/(m1mass+m2mass))
+        v2fy = (2*m1mass*v1iy)/(m1mass+m2mass)
+        
+        #set back to global f.o.r
+        v1fy += m2.vy
+        v2fy += m2.vy
+        
+        self.update_v(v1fx,v1fy)
+        m2.update_v(v2fx,v2fy)
 
 #u1 = Unit(WIDTH/2, HEIGHT/2, 40, 'penguinoes')
 #p1 = Player("red")
