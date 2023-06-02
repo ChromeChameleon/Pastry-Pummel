@@ -52,10 +52,14 @@ class Unit():
         self.liney = y
         self.pos_vect = self.x, HEIGHT - self.y
         self.pos_angle = math.degrees(math.atan(self.pos_vect[1] / self.pos_vect[0]))
-    
+        self.line_vect = (0, 0)
+        
     def update_pos_vect(self):
         self.pos_vect = (self.x, HEIGHT - self.y)
         self.pos_angle = math.degrees(math.atan(self.pos_vect[1] / self.pos_vect[0]))
+        self.line_vect = self.linex - self.x, HEIGHT - self.liney - self.y
+        print(self.line_vect)
+        #self.line_vect = 
 #         self.radius = radius
 #         self.colour = colour
     def move(self, x, y):
@@ -78,7 +82,7 @@ def draw():
     u1.actor.draw()
 
 def update():
-    print(u1.pos_vect, u1.pos_angle)
+    #print(u1.pos_vect, u1.pos_angle)
     u1.update_pos_vect()
     u1.move(1,1)
 
@@ -86,5 +90,7 @@ def on_mouse_move(pos, rel, buttons):
     if mouse.LEFT in buttons:
         u1.linex = pos[0]
         u1.liney = pos[1]
+        #u1.update_pos_vect()
+        #print(pos[0], pos[1])
 
 pgzrun.go()
