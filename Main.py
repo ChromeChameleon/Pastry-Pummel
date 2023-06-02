@@ -17,6 +17,22 @@ class Driver():
             self.players.append(p)
             starting_pos = WIDTH - starting_pos #insane math
     
+    def detect_collision(self):
+        actors = [] #should make this a self variable as its required multiple times
+        
+        for i in range(len(self.players[1].units)): #creates a list of actors of the 2nd team
+            actors.append(self.players[1].units[i].actor)
+            #actors.append(self.players[0].units[i].actor) #seems to not work
+       
+        for p1units in (self.players[0].units):
+            try:
+                index = p1units.actor.collidelist_pixel(actors) #returns the index of the collider #actor
+                #print(index)
+                if index != -1: # -1 means not colliding 0 - onwards is just index of list
+                    print(p1units,self.players[1].units[index]) #prints the coords of first penguin, and #coords of second penguin
+            except: #for testing purposes as to not crash the code for no reason
+                pass
+      
 class Player():
     """the player itself
     
@@ -29,13 +45,13 @@ class Player():
     def __init__(self,team):
         self.team = team #team eg player 1 or 2
         self.units = [] # list of unit objects
-        
+       
     def make_team(self, units,starting_pos):
         """takes the # of units and their starting positions and creates a team of units"""
         xpos = starting_pos
         ypos = 100
         for i in range(units):
-            self.units.append(Unit(xpos, ypos, 40, 'penguinoes'))
+            self.units.append(Unit(xpos, ypos, 40, 'penguinoes',f"{self.team}penguin{i}"))
             ypos += 150
 #             penguinoes = Actor("penguinoes") #to be changed, but its just which picture
 #             coords = Unit(100,100) #coords of this actor
@@ -52,8 +68,11 @@ class Unit():
     mass
     radius
     colour
+    name: Str value to identify the unit 
+
     '''
-    def __init__(self, x, y, mass, actor):
+    def __init__(self, x, y, mass, actor,name):
+        self.name = name
         self.x = x
         self.y = y
         self.mass = mass
@@ -64,6 +83,10 @@ class Unit():
         self.vy = 0
 #         self.radius = radius
 #         self.colour = colour
+    
+    def __repr__(self):
+        return self.name
+    
     def move(self,x,y):
         self.x += x
         self.y += y
@@ -133,10 +156,17 @@ def draw():
             unit.actor.draw()
             
 def update():
-    pass
+    
+
     for players in admin.players:
         for unit in players.units:
-            unit.move(randint(-10,10),randint(-10,10))
+            if players.team == "p1":
+                unit.move(5,0)
+            else:
+                unit.move(-5,0)
+            #unit.move(randint(-10,10),randint(-10,10))
+
+    admin.detect_collision()
     #for unit in p1.units:
         #x = randint(-10,10)
         #y = randint(-10,10)
