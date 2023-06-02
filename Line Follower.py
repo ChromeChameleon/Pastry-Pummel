@@ -53,12 +53,16 @@ class Unit():
         self.pos_vect = self.x, HEIGHT - self.y
         self.pos_angle = math.degrees(math.atan(self.pos_vect[1] / self.pos_vect[0]))
         self.line_vect = (0, 0)
+        self.active_arrow = False
         
+    def is_clicked():
+        print('hi')
+    
     def update_pos_vect(self):
         self.pos_vect = (self.x, HEIGHT - self.y)
         self.pos_angle = math.degrees(math.atan(self.pos_vect[1] / self.pos_vect[0]))
         self.line_vect = self.linex - self.x, HEIGHT - self.liney - self.y
-        print(self.line_vect)
+        #print(self.line_vect)
         #self.line_vect = 
 #         self.radius = radius
 #         self.colour = colour
@@ -86,8 +90,15 @@ def update():
     u1.update_pos_vect()
     u1.move(1,1)
 
+def on_mouse_down(pos):
+    if u1.actor.collidepoint(pos):
+        u1.active_arrow = True
+
+def on_mouse_up(pos, button):
+    u1.active_arrow = False
+
 def on_mouse_move(pos, rel, buttons):
-    if mouse.LEFT in buttons:
+    if mouse.LEFT in buttons and u1.active_arrow:
         u1.linex = pos[0]
         u1.liney = pos[1]
         #u1.update_pos_vect()
