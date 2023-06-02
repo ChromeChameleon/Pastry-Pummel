@@ -17,6 +17,21 @@ class Driver():
             self.players.append(p)
             starting_pos = WIDTH - starting_pos #insane math
     
+    def detect_collision(self):
+        actors = []
+        for i in range(len(self.players[1].units)):
+            actors.append(self.players[1].units[i].actor)
+      
+        for p1units in (self.players[0].units):
+            try:
+                index = p1units.actor.collidelist_pixel(actors)
+                #print(index)
+                if index != -1:
+                    print(p1units,self.players[1].units[index])
+            except:
+                pass
+            
+    
 class Player():
     """the player itself
     
@@ -64,6 +79,9 @@ class Unit():
         self.vy = 0
 #         self.radius = radius
 #         self.colour = colour
+    def __repr__(self):
+        return f"{self.x},{self.y}"
+        
     def move(self,x,y):
         self.x += x
         self.y += y
@@ -71,9 +89,12 @@ class Unit():
         self.actor.y = self.y
        # print(self.x, self.y, self.actor.x, self.actor.y)
     
-    def update_v(vx,vy):
+    def update_v(self,vx,vy):
         self.vx = vx
         self.vy = vy
+    
+  
+        
 
 #u1 = Unit(WIDTH/2, HEIGHT/2, 40, 'penguinoes')
 #p1 = Player("red")
@@ -88,10 +109,16 @@ def draw():
             unit.actor.draw()
             
 def update():
-    pass
     for players in admin.players:
         for unit in players.units:
-            unit.move(randint(-10,10),randint(-10,10))
+            if players.team == "p1":
+                unit.move(5,0)
+            else:
+                unit.move(-5,0)
+            #unit.move(randint(-10,10),randint(-10,10))
+            
+    admin.detect_collision()
+    
     #for unit in p1.units:
         #x = randint(-10,10)
         #y = randint(-10,10)
