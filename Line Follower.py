@@ -59,6 +59,18 @@ class Unit():
         print('hi')
     
     def update_pos_vect(self):
+        '''
+        Updates the vector components
+        
+        Variables
+        ---------
+        pos_vect:
+            Stores position vector component of penguin (note: [0,0] is refered to by the bottom left)
+        pos_angle:
+            Stores the angle (degrees) that the penguin makes to the x-axis
+        line_vect:
+            Stores the vector component of the line relative to the penguin's position vector
+        '''
         self.pos_vect = (self.x, HEIGHT - self.y)
         self.pos_angle = math.degrees(math.atan(self.pos_vect[1] / self.pos_vect[0]))
         self.line_vect = self.linex - self.x, HEIGHT - self.liney - self.y
