@@ -25,13 +25,14 @@ class Driver():
             #actors.append(self.players[0].units[i].actor) #seems to not work
        
         for p1units in (self.players[0].units):
-            try:
-                index = p1units.actor.collidelist_pixel(actors) #returns the index of the collider #actor
-                #print(index)
-                if index != -1: # -1 means not colliding 0 - onwards is just index of list
-                    print(p1units,self.players[1].units[index]) #prints the coords of first penguin, and #coords of second penguin
-            except: #for testing purposes as to not crash the code for no reason
-                pass
+            index = p1units.actor.collidelist_pixel(actors) #returns the index of the collider #actor
+            #print(index)
+            if index != -1: # -1 means not colliding 0 - onwards is just index of list
+                print(p1units,self.players[1].units[index]) #prints the coords of first penguin, and #coords of second penguin
+                p1units.collision_calc(self.players[1].units[index]) # passes the second unit collided into the collision calc
+                                                                    # method of the first
+#             except: #for testing purposes as to not crash the code for no reason
+#                 print('error')
       
 class Player():
     """the player itself
@@ -87,14 +88,27 @@ class Unit():
     def __repr__(self):
         return self.name
     
-    def move(self,x,y):
-        self.x += x
-        self.y += y
+    def move(self):
+        '''
+        moves the units coordinates by its current x and y velocities
+        '''
+        self.x += self.vx
+        self.y += self.vy
         self.actor.x = self.x
         self.actor.y = self.y
        # print(self.x, self.y, self.actor.x, self.actor.y)
     
-    def update_v(self, vx,vy):
+    def update_v(self, vx, vy):
+        '''
+        sets the x and y velocities of the unit to the given values
+        
+        Parameters
+        ----------
+        vx: float
+            the x velocity to set
+        vy: float
+            the y velocity to set
+        '''
         self.vx = vx
         self.vy = vy
         
@@ -142,12 +156,23 @@ class Unit():
         
         self.update_v(v1fx,v1fy)
         m2.update_v(v2fx,v2fy)
+#         print(self.vx,self.vy)
+#         print(m2.vx,m2.vy)
 
 #u1 = Unit(WIDTH/2, HEIGHT/2, 40, 'penguinoes')
 #p1 = Player("red")
 #p1.make_team(4)
 admin = Driver()
 admin.setupPlayers()
+
+#sets velocities of each unit (this is for testing only)
+for players in admin.players:
+        for unit in players.units:
+            if players.team == "p1":
+                unit.update_v(2,2)
+            else:
+                unit.update_v(-2,2)
+
 def draw():
     screen.clear()
     screen.fill((50,100,150))
@@ -160,10 +185,11 @@ def update():
 
     for players in admin.players:
         for unit in players.units:
-            if players.team == "p1":
-                unit.move(5,0)
-            else:
-                unit.move(-5,0)
+#             if players.team == "p1":
+#                 unit.update_v(5,0)
+#             else:
+#                 unit.update_v(-5,0)
+            unit.move()
             #unit.move(randint(-10,10),randint(-10,10))
 
     admin.detect_collision()
