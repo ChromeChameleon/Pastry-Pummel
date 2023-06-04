@@ -108,7 +108,7 @@ class Unit():
 
         self.linex = x
         self.liney = y
-        self.pos_vect = self.x, HEIGHT - self.y
+        self.pos_vect = self.x, self.y
         self.line_vect = (0, 0)
         self.mag_line_vect = 0
         self.active_arrow = False
@@ -116,14 +116,14 @@ class Unit():
     def __repr__(self):
         return self.name
     
-    def update_vect(self):
+    def update_vector(self):
         '''Updates the vector components
 
         Variables
         ---------
         '''
-        self.pos_vect = (self.x, HEIGHT - self.y)
-        self.line_vect = self.linex - self.x, HEIGHT - self.liney - self.y
+        self.pos_vect = (self.x, self.y)
+        self.line_vect = self.linex - self.x, self.y - self.liney
         self.mag_line_vect = math.sqrt(self.line_vect[0]**2 + self.line_vect[1]**2)
         print(self.line_vect)
     def move(self):
@@ -285,8 +285,8 @@ def on_mouse_up(pos, button):
 def on_mouse_move(pos, rel, buttons):
     for unit in admin.players[0].units:
         if mouse.LEFT in buttons and unit.active_arrow:
-            unit.actor.linex = pos[0]
-            unit.actor.liney = pos[1]
+            unit.linex = pos[0]
+            unit.liney = pos[1]
 
 def draw():
     screen.clear()
@@ -311,7 +311,7 @@ def update():
 
     admin.detect_collision()
     for unit in admin.players[0].units:
-        unit.update_vect()
+        unit.update_vector()
     #for unit in p1.units:
         #x = randint(-10,10)
         #y = randint(-10,10)
