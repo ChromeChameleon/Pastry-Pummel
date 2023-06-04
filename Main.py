@@ -44,10 +44,10 @@ class Driver():
         for units in actors: 
             index = units.actor.collidelist_pixel(collactors) #returns the index of the collider #actor
             if index != -1: # -1 means not colliding 0 - onwards is just index of list
-                print(units,colliders[index]) #prints the coords of first penguin, and #coords of second penguin
+                #print(units,colliders[index]) #prints the coords of first penguin, and #coords of second penguin
                 units.collision_calc(colliders[index]) # passes the second unit collided into the collision calc
             
-            #removes items as to rpevent collsions with itself
+            #removes items as to prevent collisions with itself
             if len(colliders) != 0:
                 colliders.pop(0) 
                 collactors.pop(0)
@@ -59,7 +59,7 @@ class Driver():
 class Player():
     """the player itself
     
-    Attrtibutes
+    Attributes
     -------------
     team: Str that represents which team the player is on
     units: a List that represents every unit that belongs to the player
@@ -105,10 +105,27 @@ class Unit():
         self.vy = 0
 #         self.radius = radius
 #         self.colour = colour
+
+        self.linex = x
+        self.liney = y
+        self.pos_vect = self.x, HEIGHT - self.y
+        self.line_vect = (0, 0)
+        self.mag_line_vect = 0
+        self.active_arrow = False
     
     def __repr__(self):
         return self.name
     
+    def update_vect(self):
+        '''Updates the vector components
+
+        Variables
+        ---------
+        '''
+        self.pos_vect = (self.x, HEIGHT - self.y)
+        self.line_vect = self.linex - self.x, HEIGHT - self.liney - self.y
+        self.mag_line_vect = math.sqrt(self.line_vect[0]**2 + self.line_vect[1]**2)
+        print(self.line_vect)
     def move(self):
         '''
         moves the units coordinates by its current x and y velocities
@@ -141,11 +158,11 @@ class Unit():
         self.vy = vy
         
         if self.vx != 0: # prevents division by zero error
-            self.angle = abs((math.atan(self.vy/self.vx)))
+            self.angle = abs((math.atan(self.vy/self.vx))) #Radians
         else:
             self.angle = math.pi/2 #sets angle to pi/2 (90 deg) when vx = 0
             print('hi')
-        print(self.angle)
+        #print(self.angle)
         self.launch_dir = ['',''] #[xdirection, ydirection]
         if self.vx > 0:
             self.launch_dir[0] = '+'
@@ -256,9 +273,26 @@ for players in admin.players:
             else:
                 unit.update_v(-2,2)
 
+def on_mouse_down(pos):
+    for unit in admin.players[0].units:
+        if unit.actor.collidepoint(pos):
+            unit.active_arrow = True
+
+def on_mouse_up(pos, button):
+    for unit in admin.players[0].units:
+        unit.active_arrow = False
+        
+def on_mouse_move(pos, rel, buttons):
+    for unit in admin.players[0].units:
+        if mouse.LEFT in buttons and unit.active_arrow:
+            unit.actor.linex = pos[0]
+            unit.actor.liney = pos[1]
+
 def draw():
     screen.clear()
     screen.fill((50,100,150))
+    for unit in admin.players[0].units:
+        screen.draw.line((unit.actor.x, unit.actor.y), (unit.linex, unit.liney), (50, 50, 50))
     for players in admin.players:
         for unit in players.units:
             unit.actor.draw()
@@ -276,6 +310,8 @@ def update():
             #unit.move(randint(-10,10),randint(-10,10))
 
     admin.detect_collision()
+    for unit in admin.players[0].units:
+        unit.update_vect()
     #for unit in p1.units:
         #x = randint(-10,10)
         #y = randint(-10,10)
