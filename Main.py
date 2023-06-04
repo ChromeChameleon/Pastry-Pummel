@@ -326,14 +326,13 @@ def on_mouse_up(pos, button):
 def on_mouse_move(pos, rel, buttons):
     "Changes position of line vector if left click + active_arrow is True"
     for unit in admin.players[0].units:
-        mouse_vect = (pos[0] - unit.x, unit.y - pos[1])
-        mag_mouse_vect = math.sqrt(mouse_vect[0]**2 + mouse_vect[1]**2)
+        mag_mouse_vect = math.sqrt((pos[0] - unit.x)**2 + (pos[1] - unit.y)**2)  #Stores magnitude of theoretical line between unit and cursor
         if mag_mouse_vect > max_arr_len:
-            factor = max_arr_len / mag_mouse_vect
+            factor = max_arr_len / mag_mouse_vect       #Create a multiplying factor if the line exceeds the maximum length
         else:
             factor = 1
         if mouse.LEFT in buttons and unit.active_arrow:
-            unit.linex = unit.x + ((pos[0] - unit.x) * factor)
+            unit.linex = unit.x + ((pos[0] - unit.x) * factor)       #Use similar triangles to develop an equation to readjust the position of the line
             unit.liney = unit.y + ((pos[1] - unit.y) * factor)
             
 time = 0
