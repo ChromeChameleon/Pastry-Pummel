@@ -68,6 +68,7 @@ class Player():
     def __init__(self,team):
         self.team = team #team eg player 1 or 2
         self.units = [] # list of unit objects
+        self.ready_launch = False
        
     def make_team(self, units,starting_pos):
         """takes the # of units and their starting positions and creates a team of units"""
@@ -76,6 +77,18 @@ class Player():
         for i in range(units):
             self.units.append(Unit(xpos, ypos, 40, 'cookie',f"{self.team}cookie{i}"))
             ypos += 150
+    
+    def launch(self):
+        '''
+        Detects to see if the line vector magnitude is greater than zero and if the player is ready to launch
+        '''
+        print(self.ready_launch)
+        for unit in self.units:
+            if unit.mag_line_vect == 0:           #Set a proper boundary in the future
+                self.ready_launch = False
+                return self.ready_launch
+        if keyboard.SPACE:                            #Change to a button in the future - keyboard.SPACE is temporary
+            self.ready_launch = True
 
 class Unit():
     '''
@@ -348,12 +361,13 @@ def draw():
 def update():
     
     for players in admin.players:
+        players.launch()
         for unit in players.units:
 #             if players.team == "p1":
 #                 unit.update_v(5,0)
 #             else:
 #                 unit.update_v(-5,0)
-            unit.move()
+            #unit.move()
             unit.acceleration()
             #unit.move(randint(-10,10),randint(-10,10))
 
