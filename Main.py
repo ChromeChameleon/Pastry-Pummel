@@ -77,7 +77,7 @@ class Player():
         xpos = starting_pos
         ypos = 100
         for i in range(units):
-            self.units.append(Unit(xpos, ypos, 40, 'penguinoes',f"{self.team}penguin{i}"))
+            self.units.append(Unit(xpos, ypos, 40, 'cookie',f"{self.team}cookie{i}"))
             ypos += 150
 
 class Unit():
@@ -243,6 +243,22 @@ class Unit():
                 self.vy = 0 # makes it stay at 0 once it reaches it
         #print(self.vx,self.vy)
 
+class Board():
+    """the game board
+    Board that shrinks every round
+    """
+    def __init__(self,width,height,shrink_rate):
+        self.topx = 0
+        self.topy = 0
+        self.width = width
+        self.height = height
+        self.shrink_rate = shrink_rate
+        self.board = None
+        self.actor = Actor("square",(WIDTH//2,HEIGHT//2))
+    def shrink_board(self):
+        if self.actor.scale >= 0.1:
+            self.actor.scale *= self.shrink_rate
+        
 
 #u1 = Unit(WIDTH/2, HEIGHT/2, 40, 'penguinoes')
 #p1 = Player("red")
@@ -251,6 +267,9 @@ class Unit():
 admin = Driver()
 admin.setupPlayers()
 
+"""TEMP BOARD"""
+board = Board(0,0,0.9) #width, height,shrink rate (only last one matters)
+
 #sets velocities of each unit (this is for testing only)
 for players in admin.players:
         for unit in players.units:
@@ -258,21 +277,33 @@ for players in admin.players:
                 unit.update_v(2,2)
             else:
                 unit.update_v(-2,2)
-
+time = 0
 def draw():
-    global turns
+    global turns,time
+
     screen.clear()
     screen.fill((50,100,150))
+    
+    board.actor.draw()
+    if time/60 >= 1:
+        board.shrink_board()
+        time = 0
+    """
     board = Rect((0+(SHRINK_CONSTANT/2)*turns,0+(SHRINK_CONSTANT/2)*turns,
                   WIDTH - SHRINK_CONSTANT*turns,HEIGHT - SHRINK_CONSTANT*turns))#left,top,width,height
             #moves the board left and down by multiplying the shrink constant by the number of turns,
             #it is divided by two to keep it centered. The width and height are then subtracted by the
             #shrink constant multiplied by the turns.
     screen.draw.filled_rect(board,(255,255,255))
+    """
+    
     for players in admin.players:
         for unit in players.units:
             unit.actor.draw()
+            """
     turns += 1 #for testing
+    """
+    time += 1
             
 def update():
     
