@@ -121,6 +121,12 @@ class Unit():
 
         Variables
         ---------
+        pos_vect:
+            Stores position vector component of penguin (note: [0,0] is refered to by the bottom left)
+        line_vect:
+            Stores the vector component of the line relative to the penguin's position vector
+        mag_line_vect:
+            Stores the magnitude of the line vector
         '''
         self.pos_vect = (self.x, self.y)
         self.line_vect = self.linex - self.x, self.y - self.liney
@@ -293,15 +299,18 @@ for players in admin.players:
                 unit.update_v(-2,2)
 
 def on_mouse_down(pos):
+    "Turns active_arrow True if mouse is held down and if mouse position is colliding with unit"
     for unit in admin.players[0].units:
         if unit.actor.collidepoint(pos):
             unit.active_arrow = True
 
 def on_mouse_up(pos, button):
+    "Turns active_arrow False if mouse is lifted up"
     for unit in admin.players[0].units:
         unit.active_arrow = False
         
 def on_mouse_move(pos, rel, buttons):
+    "Changes position of line vector if left click + active_arrow is True"
     for unit in admin.players[0].units:
         if mouse.LEFT in buttons and unit.active_arrow:
             unit.linex = pos[0]
