@@ -99,8 +99,8 @@ class Unit():
         self.y = y
         self.mass = mass
         self.actor = Actor(actor)
-#         self.actor.x = self.x
-#         self.actor.y = self.y (technically unnessary as you have a move method)
+        self.actor.x = self.x
+        self.actor.y = self.y 
         self.vx = 0
         self.vy = 0
 #         self.radius = radius
@@ -125,7 +125,7 @@ class Unit():
         self.pos_vect = (self.x, self.y)
         self.line_vect = self.linex - self.x, self.y - self.liney
         self.mag_line_vect = math.sqrt(self.line_vect[0]**2 + self.line_vect[1]**2)
-        print(self.line_vect)
+        #print(self.line_vect)
     def move(self):
         '''
         moves the units coordinates by its current x and y velocities
