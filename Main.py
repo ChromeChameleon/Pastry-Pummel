@@ -82,9 +82,9 @@ class Player():
         '''
         Detects to see if the line vector magnitude is greater than zero and if the player is ready to launch
         '''
-        print(self.ready_launch)
+        #print(self.ready_launch)
         for unit in self.units:
-            if unit.mag_line_vect == 0:           #Set a proper boundary in the future
+            if unit.mag_line_vect < 25:           #Set a proper boundary in the future
                 self.ready_launch = False
                 return self.ready_launch
         if keyboard.SPACE:                            #Change to a button in the future - keyboard.SPACE is temporary
@@ -125,7 +125,7 @@ class Unit():
         self.line_vect = (0, 0)
         self.mag_line_vect = 0
         self.active_arrow = False
-    
+        
     def __repr__(self):
         return self.name
     
@@ -135,7 +135,7 @@ class Unit():
         Variables
         ---------
         pos_vect:
-            Stores position vector component of penguin (note: [0,0] is refered to by the bottom left)
+            Stores position vector component of penguin
         line_vect:
             Stores the vector component of the line relative to the penguin's position vector
         mag_line_vect:
@@ -328,7 +328,7 @@ def on_mouse_move(pos, rel, buttons):
         if mouse.LEFT in buttons and unit.active_arrow:
             unit.linex = pos[0]
             unit.liney = pos[1]
-
+            
 time = 0
 def draw():
     global turns,time
