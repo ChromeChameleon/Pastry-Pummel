@@ -10,6 +10,9 @@ WIDTH = 800
 HEIGHT = 800
 uk = 0.0008
 
+turns = 0 #the number of turns that have passed
+SHRINK_CONSTANT = 10 #The amount of pixels the width and height of the board get shrunk by
+
 class Driver():
     def __init__(self):
         self.players = []
@@ -257,11 +260,19 @@ for players in admin.players:
                 unit.update_v(-2,2)
 
 def draw():
+    global turns
     screen.clear()
     screen.fill((50,100,150))
+    board = Rect((0+(SHRINK_CONSTANT/2)*turns,0+(SHRINK_CONSTANT/2)*turns,
+                  WIDTH - SHRINK_CONSTANT*turns,HEIGHT - SHRINK_CONSTANT*turns))#left,top,width,height
+            #moves the board left and down by multiplying the shrink constant by the number of turns,
+            #it is divided by two to keep it centered. The width and height are then subtracted by the
+            #shrink constant multiplied by the turns.
+    screen.draw.filled_rect(board,(255,255,255))
     for players in admin.players:
         for unit in players.units:
             unit.actor.draw()
+    turns += 1 #for testing
             
 def update():
     
