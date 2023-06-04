@@ -8,7 +8,7 @@ import math
 
 WIDTH = 800
 HEIGHT = 800
-uk = 0.001
+uk = 0.0008
 
 class Driver():
     def __init__(self):
@@ -140,7 +140,11 @@ class Unit():
         self.vx = vx
         self.vy = vy
         
-        self.angle = abs((math.atan(self.vy/self.vx)))
+        if self.vx != 0: # prevents division by zero error
+            self.angle = abs((math.atan(self.vy/self.vx)))
+        else:
+            self.angle = math.pi/2 #sets angle to pi/2 (90 deg) when vx = 0
+            print('hi')
         print(self.angle)
         self.launch_dir = ['',''] #[xdirection, ydirection]
         if self.vx > 0:
