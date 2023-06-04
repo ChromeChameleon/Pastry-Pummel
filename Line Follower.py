@@ -53,6 +53,7 @@ class Unit():
         self.pos_vect = self.x, HEIGHT - self.y
         self.pos_angle = math.degrees(math.atan(self.pos_vect[1] / self.pos_vect[0]))
         self.line_vect = (0, 0)
+        self.mag_line_vect = 0
         self.active_arrow = False
         
     def is_clicked():
@@ -70,11 +71,13 @@ class Unit():
             Stores the angle (degrees) that the penguin makes to the x-axis
         line_vect:
             Stores the vector component of the line relative to the penguin's position vector
+        
         '''
         self.pos_vect = (self.x, HEIGHT - self.y)
         self.pos_angle = math.degrees(math.atan(self.pos_vect[1] / self.pos_vect[0]))
         self.line_vect = self.linex - self.x, HEIGHT - self.liney - self.y
-        #print(self.line_vect)
+        self.mag_line_vect = math.sqrt(self.line_vect[0]**2 + self.line_vect[1]**2)
+        print(self.mag_line_vect)
         #self.line_vect = 
 #         self.radius = radius
 #         self.colour = colour
@@ -100,7 +103,7 @@ def draw():
 def update():
     #print(u1.pos_vect, u1.pos_angle)
     u1.update_pos_vect()
-    u1.move(1,1)
+    #u1.move(1,1)
 
 def on_mouse_down(pos):
     if u1.actor.collidepoint(pos):
