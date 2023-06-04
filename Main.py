@@ -1,9 +1,14 @@
+import os
+os.environ['SDL_VIDEO_WINDOW_POS'] = '550,150'
+
 import pgzrun
 from pgzhelper import *
 from random import *
+import math
 
 WIDTH = 800
 HEIGHT = 800
+uk = 0.001
 
 class Driver():
     def __init__(self):
@@ -33,6 +38,7 @@ class Driver():
                                                                     # method of the first
 #             except: #for testing purposes as to not crash the code for no reason
 #                 print('error')
+
       
 class Player():
     """the player itself
@@ -66,6 +72,8 @@ class Unit():
     y: Int value that represents the y position of the unit
     vx: Int value that represents the x speed of the unit
     vy: Int value that represents the y speed of the unit
+    angle:
+    launch_dir:
     mass
     radius
     colour
@@ -100,7 +108,9 @@ class Unit():
     
     def update_v(self, vx, vy):
         '''
-        sets the x and y velocities of the unit to the given values
+        sets the x and y velocities of the unit to the given values,
+        then finds the launch angle. It then makes a list which stores if the initial
+        x and y launch velocities are positive or negative
         
         Parameters
         ----------
@@ -111,6 +121,19 @@ class Unit():
         '''
         self.vx = vx
         self.vy = vy
+        
+        self.angle = abs((math.atan(self.vy/self.vx)))
+        print(self.angle)
+        self.launch_dir = ['',''] #[xdirection, ydirection]
+        if self.vx > 0:
+            self.launch_dir[0] = '+'
+        elif self.vx < 0:
+            self.launch_dir[0] = '-'
+        if self.vy > 0:
+            self.launch_dir[1] = '+'
+        elif self.vy > 0:
+            self.launch_dir[1] = '-'
+        #print(self.launch_dir)
         
     def collision_calc(self, m2):
         '''
@@ -159,6 +182,43 @@ class Unit():
 #         print(self.vx,self.vy)
 #         print(m2.vx,m2.vy)
 
+    def acceleration(self):
+        '''
+        calculates the magnitude of acceleration and calculates the x and y
+        components. It then adds or subtracts the x and y acceleration components
+        to bring the x and y velocity components down to 0.
+        
+        '''
+        #fnet = ma, -Ff = ma, -ukFn = ma, -ukFg = ma, -ukmg = ma, -ukg = a
+        acc = uk * 9.8
+        #print(self.angle)
+        accx = acc * math.cos(self.angle) #calculates components
+        accy = acc * math.sin(self.angle)
+        #print(accx,accy)
+        if self.vx > 0: #if vx is positive
+            if self.launch_dir[0] == '+': # is true if vx should be positive
+                self.vx -= accx
+            else:
+                self.vx = 0 # makes it stay at 0 once it reaches it
+        elif self.vx < 0: #if vx is negative
+            if self.launch_dir[0] == '-': # is true if vx should be negative
+                self.vx += accx
+            else:
+                self.vx = 0 # makes it stay at 0 once it reaches it
+            
+        if self.vy > 0: #if vy is positive
+            if self.launch_dir[1] == '+': # is true if vy should be positive
+                self.vy -= accy
+            else:
+                self.vy = 0 # makes it stay at 0 once it reaches it
+        elif self.vy < 0: #if vy is negative
+            if self.launch_dir[0] == '-': # is true if vy should be negative
+                self.vy += accy
+            else:
+                self.vy = 0 # makes it stay at 0 once it reaches it
+        #print(self.vx,self.vy)
+
+
 #u1 = Unit(WIDTH/2, HEIGHT/2, 40, 'penguinoes')
 #p1 = Player("red")
 #p1.make_team(4)
@@ -190,6 +250,7 @@ def update():
 #             else:
 #                 unit.update_v(-5,0)
             unit.move()
+            unit.acceleration()
             #unit.move(randint(-10,10),randint(-10,10))
 
     admin.detect_collision()
