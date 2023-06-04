@@ -9,6 +9,7 @@ import math
 WIDTH = 800
 HEIGHT = 800
 uk = 0.0008
+max_arr_len = 200
 
 class Driver():
     def __init__(self):
@@ -142,7 +143,7 @@ class Unit():
             Stores the magnitude of the line vector
         '''
         self.pos_vect = (self.x, self.y)
-        self.line_vect = self.linex - self.x, self.y - self.liney
+        self.line_vect = (self.linex - self.x), (self.y - self.liney)
         self.mag_line_vect = math.sqrt(self.line_vect[0]**2 + self.line_vect[1]**2)
         #print(self.line_vect)
     def move(self):
@@ -325,9 +326,15 @@ def on_mouse_up(pos, button):
 def on_mouse_move(pos, rel, buttons):
     "Changes position of line vector if left click + active_arrow is True"
     for unit in admin.players[0].units:
+        mouse_vect = (pos[0] - unit.x, unit.y - pos[1])
+        mag_mouse_vect = math.sqrt(mouse_vect[0]**2 + mouse_vect[1]**2)
+        if mag_mouse_vect > max_arr_len:
+            factor = max_arr_len / mag_mouse_vect
+        else:
+            factor = 1
         if mouse.LEFT in buttons and unit.active_arrow:
-            unit.linex = pos[0]
-            unit.liney = pos[1]
+            unit.linex = unit.x + ((pos[0] - unit.x) * factor)
+            unit.liney = unit.y + ((pos[1] - unit.y) * factor)
             
 time = 0
 def draw():
