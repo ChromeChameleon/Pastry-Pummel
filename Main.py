@@ -19,18 +19,34 @@ class Driver():
     
     def detect_collision(self):
         actors = [] #should make this a self variable as its required multiple times
+       
+        #list of all teams
+        #second list where values are removed
+        for i in range(len(self.players[0].units)): #creates a list of actors of the 2nd team
+            actors.append(self.players[0].units[i])
         
         for i in range(len(self.players[1].units)): #creates a list of actors of the 2nd team
-            actors.append(self.players[1].units[i].actor)
-            #actors.append(self.players[0].units[i].actor) #seems to not work
-       
-        for p1units in (self.players[0].units):
-            index = p1units.actor.collidelist_pixel(actors) #returns the index of the collider #actor
-            #print(index)
+            actors.append(self.players[1].units[i])
+        
+        colliders = actors.copy() #a list of units of both teams
+        colliders.pop(0) # removes the first item in the list to prevent collidng with itself
+        collactors = [] # list of actors of those units
+        
+        #creates actors list from the unit list
+        for unit in colliders:
+            collactors.append(unit.actor)
+        
+        for units in actors: 
+            index = units.actor.collidelist_pixel(collactors) #returns the index of the collider #actor
             if index != -1: # -1 means not colliding 0 - onwards is just index of list
-                print(p1units,self.players[1].units[index]) #prints the coords of first penguin, and #coords of second penguin
-                p1units.collision_calc(self.players[1].units[index]) # passes the second unit collided into the collision calc
-                                                                    # method of the first
+                print(units,colliders[index]) #prints the coords of first penguin, and #coords of second penguin
+                units.collision_calc(colliders[index]) # passes the second unit collided into the collision calc
+            
+            #removes items as to rpevent collsions with itself
+            if len(colliders) != 0:
+                colliders.pop(0) 
+                collactors.pop(0)
+             
 #             except: #for testing purposes as to not crash the code for no reason
 #                 print('error')
       
@@ -54,9 +70,6 @@ class Player():
         for i in range(units):
             self.units.append(Unit(xpos, ypos, 40, 'penguinoes',f"{self.team}penguin{i}"))
             ypos += 150
-#             penguinoes = Actor("penguinoes") #to be changed, but its just which picture
-#             coords = Unit(100,100) #coords of this actor
-#             self.units.append([penguinoes,coords]) 
 
 class Unit():
     '''
@@ -94,10 +107,15 @@ class Unit():
         '''
         self.x += self.vx
         self.y += self.vy
+        
+       # print(self.x, self.y, self.actor.x, self.actor.y)
+        #if self.x >= WIDTH or self.x <= 0:
+           # self.x = randint(200,600)
+        #if self.y >= HEIGHT or self.y <= 0:
+            #self.y = randint(200,600)
+        
         self.actor.x = self.x
         self.actor.y = self.y
-       # print(self.x, self.y, self.actor.x, self.actor.y)
-    
     def update_v(self, vx, vy):
         '''
         sets the x and y velocities of the unit to the given values
@@ -159,9 +177,6 @@ class Unit():
 #         print(self.vx,self.vy)
 #         print(m2.vx,m2.vy)
 
-#u1 = Unit(WIDTH/2, HEIGHT/2, 40, 'penguinoes')
-#p1 = Player("red")
-#p1.make_team(4)
 admin = Driver()
 admin.setupPlayers()
 
@@ -169,9 +184,9 @@ admin.setupPlayers()
 for players in admin.players:
         for unit in players.units:
             if players.team == "p1":
-                unit.update_v(2,2)
+                unit.update_v(randint(-2,2),randint(-2,2))
             else:
-                unit.update_v(-2,2)
+                unit.update_v(randint(-2,2),randint(-2,2))
 
 def draw():
     screen.clear()
@@ -182,7 +197,6 @@ def draw():
             
 def update():
     
-
     for players in admin.players:
         for unit in players.units:
 #             if players.team == "p1":
