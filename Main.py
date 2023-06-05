@@ -13,6 +13,8 @@ uk = 0.0008
 class Driver():
     def __init__(self):
         self.players = []
+        self.actors = []
+        self.board = ""
     
     def setupPlayers(self):
         starting_pos = 100 #yes ik very scuffed will be changed later
@@ -21,8 +23,22 @@ class Driver():
             p.make_team(4,starting_pos) #creates 4 units
             self.players.append(p)
             starting_pos = WIDTH - starting_pos #insane math
-    
+        
+        #creates the list of all players actors 
+        self.setupActors()
+    def setupActors(self):
+         #list of all teams
+        for i in range(len(self.players[0].units)): #creates a list of actors of the 2nd team
+            self.actors.append(self.players[0].units[i])
+        
+        for i in range(len(self.players[1].units)): #creates a list of actors of the 2nd team
+            self.actors.append(self.players[1].units[i])
+            
+    def setupBoard(self,shrink_rate):
+        #setsup the game board
+        self.board = Board(0,0,shrink_rate)
     def detect_collision(self):
+        """
         actors = [] #should make this a self variable as its required multiple times
        
         #list of all teams
@@ -32,8 +48,8 @@ class Driver():
         
         for i in range(len(self.players[1].units)): #creates a list of actors of the 2nd team
             actors.append(self.players[1].units[i])
-        
-        colliders = actors.copy() #a list of units of both teams
+        """
+        colliders = self.actors.copy() #a list of units of both teams
         colliders.pop(0) # removes the first item in the list to prevent collidng with itself
         collactors = [] # list of actors of those units
         
@@ -41,7 +57,7 @@ class Driver():
         for unit in colliders:
             collactors.append(unit.actor)
         
-        for units in actors: 
+        for units in self.actors: 
             index = units.actor.collidelist_pixel(collactors) #returns the index of the collider #actor
             if index != -1: # -1 means not colliding 0 - onwards is just index of list
                 #print(units,colliders[index]) #prints the coords of first penguin, and #coords of second penguin
@@ -54,7 +70,17 @@ class Driver():
              
 #             except: #for testing purposes as to not crash the code for no reason
 #                 print('error')
-
+    def shrink_playerpos(self):
+        #changes player position depending on size of board
+        #make this relative to the top left corner of the board class
+        #the area of the board (800^2): sqrt(64000*90%) = side length of the board after shrinkage (758.9)
+        #800 - the side length  = the coordinate of the top left corner
+        #find x relative to top left corner and move it the percentage
+        """
+        for player in self.players:
+            for unit in player.units:
+                topcorner = self.board.topx
+         """       
       
 class Player():
     """the player itself
@@ -167,7 +193,7 @@ class Unit():
             self.angle = abs((math.atan(self.vy/self.vx))) #Radians
         else:
             self.angle = math.pi/2 #sets angle to pi/2 (90 deg) when vx = 0
-            print('hi')
+            #print('hi')
         #print(self.angle)
         self.launch_dir = ['',''] #[xdirection, ydirection]
         if self.vx > 0:
@@ -270,14 +296,23 @@ class Board():
     def __init__(self,width,height,shrink_rate):
         self.topx = 0
         self.topy = 0
+        self.area = 0
         self.width = width
         self.height = height
         self.shrink_rate = shrink_rate
         self.board = None
         self.actor = Actor("square",(WIDTH//2,HEIGHT//2))
     def shrink_board(self):
+        #make this relative to the top left corner of the board class
+        #the area of the board (800^2): sqrt(64000*90%) = side length of the board after shrinkage (758.9)
+        #800 - the side length  = the coordinate of the top left corner
         if self.actor.scale >= 0.1:
             self.actor.scale *= self.shrink_rate
+            self.area *= self.shrink_rate
+            self.topx = 800-(self.area**0.5)
+            self.topy = self.topx
+            
+        
         
 
 #u1 = Unit(WIDTH/2, HEIGHT/2, 40, 'penguinoes')
@@ -286,20 +321,24 @@ class Board():
 
 admin = Driver()
 admin.setupPlayers()
+admin.setupBoard(0.9)
+#"""TEMP BOARD"""
+#board = Board(0,0,0.9) #width, height,shrink rate (only last one matters)
 
-"""TEMP BOARD"""
-board = Board(0,0,0.9) #width, height,shrink rate (only last one matters)
 
 #sets velocities of each unit (this is for testing only)
 for players in admin.players:
         for unit in players.units:
             if players.team == "p1":
-                unit.update_v(2,2)
+                unit.update_v(3,1)
+                #unit.update_v(0,0) #for board shrinking purposes
             else:
-                unit.update_v(-2,2)
+                unit.update_v(-3,1)
+                #unit.update_v(0,0) #for board shrinking purposes
 
 def on_mouse_down(pos):
     "Turns active_arrow True if mouse is held down and if mouse position is colliding with unit"
+   # print(pos) #debugging
     for unit in admin.players[0].units:
         if unit.actor.collidepoint(pos):
             unit.active_arrow = True
@@ -319,13 +358,15 @@ def on_mouse_move(pos, rel, buttons):
 time = 0
 def draw():
     global turns,time
-
+    
     screen.clear()
     screen.fill((50,100,150))
     
-    board.actor.draw()
+    admin.board.actor.draw()
     if time/60 >= 1:
-        board.shrink_board()
+        #admin.shrink_playerpos()
+        admin.board.shrink_board()
+        
         time = 0
     """
     board = Rect((0+(SHRINK_CONSTANT/2)*turns,0+(SHRINK_CONSTANT/2)*turns,
