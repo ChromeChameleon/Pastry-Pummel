@@ -15,6 +15,7 @@ class Driver():
     def __init__(self):
         self.players = []
         self.actors = []
+        self.status = []
         self.board = ""
     
     def setupPlayers(self):
@@ -23,6 +24,7 @@ class Driver():
             p = Player(f"p{i}")
             p.make_team(4,starting_pos) #creates 4 units
             self.players.append(p)
+            self.status.append(0)
             starting_pos = WIDTH - starting_pos #insane math
         
         #creates the list of all players actors 
@@ -120,6 +122,7 @@ class Player():
                 return self.ready_launch
         if keyboard.SPACE:                            #Change to a button in the future - keyboard.SPACE is temporary
             self.ready_launch = True
+            admin.status[int(self.team[1]) - 1] = 2
 
 class Unit():
     '''
@@ -405,12 +408,34 @@ def draw():
     for players in admin.players:
         for unit in players.units:
             unit.actor.draw()
-            """
+    
+    for i in range(len(admin.status)):
+        if admin.status[i] == 1:
+            screen.draw.text(f"Player {i+1}'s turn", (WIDTH/2, 30))    
+    '''for players in admin.players:
+        if not players.ready_launch:
+            screen.draw.text(f"Player {players.team[1]}'s turn", (WIDTH/2, 30), color="orange")
+      '''      """
     turns += 1 #for testing
     """
     time += 1
 
+x = 0          #Used to cycle through turn
+checking_key = False
+
+def change_key():
+    global checking_key
+    checking_key = False
+
 def update():
+    global x
+    global checking_key
+    if keyboard.p and admin.status.count(1) != len(admin.status) and not checking_key:   #Update status on if player is not gone, going, or ready
+        admin.status[x] = 1
+        x += 1
+        checking_key = True
+        clock.schedule_unique(change_key, 1)
+    print(admin.status, x)
     
     for players in admin.players:
         players.launch()
