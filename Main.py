@@ -9,6 +9,7 @@ import math
 WIDTH = 800
 HEIGHT = 800
 uk = 0.0008
+max_arr_len = 200
 
 class Driver():
     def __init__(self):
@@ -37,6 +38,10 @@ class Driver():
     def setupBoard(self,shrink_rate):
         #setsup the game board
         self.board = Board(0,0,shrink_rate)
+    
+    def play_turn(self):
+        pass
+
     def detect_collision(self):
         """
         actors = [] #should make this a self variable as its required multiple times
@@ -94,6 +99,7 @@ class Player():
     def __init__(self,team):
         self.team = team #team eg player 1 or 2
         self.units = [] # list of unit objects
+        self.ready_launch = False
        
     def make_team(self, units,starting_pos):
         """takes the # of units and their starting positions and creates a team of units"""
@@ -102,6 +108,18 @@ class Player():
         for i in range(units):
             self.units.append(Unit(xpos, ypos, 40, 'cookie',f"{self.team}cookie{i}"))
             ypos += 150
+    
+    def launch(self):
+        '''
+        Detects to see if the line vector magnitude is greater than zero and if the player is ready to launch
+        '''
+        #print(self.ready_launch)
+        for unit in self.units:
+            if unit.mag_line_vect < 25:           #Set a proper boundary in the future
+                self.ready_launch = False
+                return self.ready_launch
+        if keyboard.SPACE:                            #Change to a button in the future - keyboard.SPACE is temporary
+            self.ready_launch = True
 
 class Unit():
     '''
@@ -138,7 +156,7 @@ class Unit():
         self.line_vect = (0, 0)
         self.mag_line_vect = 0
         self.active_arrow = False
-    
+        
     def __repr__(self):
         return self.name
     
@@ -148,14 +166,14 @@ class Unit():
         Variables
         ---------
         pos_vect:
-            Stores position vector component of penguin (note: [0,0] is refered to by the bottom left)
+            Stores position vector component of penguin
         line_vect:
             Stores the vector component of the line relative to the penguin's position vector
         mag_line_vect:
             Stores the magnitude of the line vector
         '''
         self.pos_vect = (self.x, self.y)
-        self.line_vect = self.linex - self.x, self.y - self.liney
+        self.line_vect = (self.linex - self.x), (self.y - self.liney)
         self.mag_line_vect = math.sqrt(self.line_vect[0]**2 + self.line_vect[1]**2)
         #print(self.line_vect)
     def move(self):
@@ -350,11 +368,17 @@ def on_mouse_up(pos, button):
         
 def on_mouse_move(pos, rel, buttons):
     "Changes position of line vector if left click + active_arrow is True"
-    for unit in admin.players[0].units:
-        if mouse.LEFT in buttons and unit.active_arrow:
-            unit.linex = pos[0]
-            unit.liney = pos[1]
-
+    if not admin.players[0].ready_launch:
+        for unit in admin.players[0].units:
+            mag_mouse_vect = math.sqrt((pos[0] - unit.x)**2 + (pos[1] - unit.y)**2)  #Stores magnitude of theoretical line between unit and cursor
+            if mag_mouse_vect > max_arr_len:
+                factor = max_arr_len / mag_mouse_vect       #Create a multiplying factor if the line exceeds the maximum length
+            else:
+                factor = 1
+            if mouse.LEFT in buttons and unit.active_arrow:
+                unit.linex = unit.x + ((pos[0] - unit.x) * factor)       #Use similar triangles to develop an equation to readjust the position of the line
+                unit.liney = unit.y + ((pos[1] - unit.y) * factor)
+            
 time = 0
 def draw():
     global turns,time
@@ -389,12 +413,13 @@ def draw():
 def update():
     
     for players in admin.players:
+        players.launch()
         for unit in players.units:
 #             if players.team == "p1":
 #                 unit.update_v(5,0)
 #             else:
 #                 unit.update_v(-5,0)
-            unit.move()
+            #unit.move()
             unit.acceleration()
             #unit.move(randint(-10,10),randint(-10,10))
 
