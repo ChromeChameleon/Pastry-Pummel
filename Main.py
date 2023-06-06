@@ -18,6 +18,7 @@ class Driver():
         self.players = []
         self.actors = []
         self.status = []
+        self.launch = False
         self.board = ""
         self.cycle = 0          #Used to cycle through turn
         self.checking_key = False
@@ -45,6 +46,9 @@ class Driver():
         #setsup the game board
         self.board = Board(0,0,shrink_rate)
     
+    def start_launch(self):
+        self.launch = True
+        
     def play_turn(self):
         pass
 
@@ -91,8 +95,12 @@ class Driver():
         #shifts the units pos relative to the distance from the center
         for player in self.players:
             for unit in player.units:
-                unit.x = cx - (cx-unit.x)*self.board.shrink_rate
+                unit.x = cx - (cx-unit.x)*self.board.shrink_rate #
                 unit.y = cy - (cy-unit.y)*self.board.shrink_rate
+                
+                #shifts units while not launching
+                unit.actor.x = unit.x
+                unit.actor.y = unit.y
             
       
 class Player():
@@ -117,7 +125,7 @@ class Player():
             self.units.append(Unit(xpos, ypos, 40, 'cookie',f"{self.team}cookie{i}"))
             ypos += 150
     
-    def launch(self):
+    def commit(self):
         '''
         Detects to see if the line vector magnitude is greater than zero and if the player is ready to launch
         '''
@@ -143,8 +151,11 @@ class Unit():
     mass
     radius
     colour
-    name: Str value to identify the unit 
-
+    name: Str value to identify the unit
+    linex: the x position of the units launch line
+    liney: the y position of the units launch line
+    line_vect: Stores the vector components of the line relative to the unit's position
+    mag_line_vect: Stores the magnitude of the line vector
     '''
     def __init__(self, x, y, mass, actor,name):
         self.name = name
@@ -161,7 +172,6 @@ class Unit():
 
         self.linex = x
         self.liney = y
-        self.pos_vect = self.x, self.y
         self.line_vect = (0, 0)
         self.mag_line_vect = 0
         self.active_arrow = False
@@ -170,18 +180,18 @@ class Unit():
         return self.name
     
     def update_vector(self):
-        '''Updates the vector components
+        '''
+        
 
         Variables
         ---------
-        pos_vect:
-            Stores position vector component of penguin
+        linex,liney:
+            the x and y position of the launch line (gets updated in on_mouse_move())
         line_vect:
-            Stores the vector component of the line relative to the penguin's position vector
+            Stores the vector components of the line relative to the unit's position
         mag_line_vect:
             Stores the magnitude of the line vector
         '''
-        self.pos_vect = (self.x, self.y)
         self.line_vect = (self.linex - self.x), (self.y - self.liney)
         self.mag_line_vect = math.sqrt(self.line_vect[0]**2 + self.line_vect[1]**2)
         #print(self.line_vect)
@@ -441,17 +451,23 @@ def update():
         admin.cycle += 1
         admin.checking_key = True
         clock.schedule_unique(change_key, 1)
-    print(admin.status, admin.cycle)
+    #print(admin.status, x)
+    if keyboard.g:
+        admin.start_launch()
+    #print(admin.status, admin.cycle)
     
     for players in admin.players:
-        players.launch()
+        players.commit()
         for unit in players.units:
+            if admin.launch == True:
 #             if players.team == "p1":
 #                 unit.update_v(5,0)
 #             else:
 #                 unit.update_v(-5,0)
-            unit.move()
-            unit.acceleration()
+
+                unit.move()
+                unit.acceleration()
+
             #unit.move(randint(-10,10),randint(-10,10))
 
     admin.detect_collision()
@@ -459,6 +475,7 @@ def update():
         for unit in player.units:
             unit.update_vector()
     
+
     for i in range(len(admin.status)):
         if admin.status[i] == 2:
             admin.status[i+1] = 1
