@@ -1,5 +1,5 @@
 import os
-os.environ['SDL_VIDEO_WINDOW_POS'] = '550,150'
+os.environ['SDL_VIDEO_CENTERED'] = '1'
 
 import pgzrun
 from pgzhelper import *
@@ -17,6 +17,8 @@ class Driver():
         self.actors = []
         self.status = []
         self.board = ""
+        self.cycle = 0          #Used to cycle through turn
+        self.checking_key = False
     
     def setupPlayers(self):
         starting_pos = 100 #yes ik very scuffed will be changed later
@@ -115,12 +117,12 @@ class Player():
         '''
         Detects to see if the line vector magnitude is greater than zero and if the player is ready to launch
         '''
-        #print(self.ready_launch)
+        #print(admin.status[int(self.team[1])-1])
         for unit in self.units:
             if unit.mag_line_vect < 25:           #Set a proper boundary in the future
                 self.ready_launch = False
                 return self.ready_launch
-        if keyboard.SPACE:                            #Change to a button in the future - keyboard.SPACE is temporary
+        if keyboard.SPACE and admin.status[int(self.team[1])-1] == 1:                            #Change to a button in the future - keyboard.SPACE is temporary
             self.ready_launch = True
             admin.status[int(self.team[1]) - 1] = 2
 
@@ -420,22 +422,17 @@ def draw():
     """
     time += 1
 
-x = 0          #Used to cycle through turn
-checking_key = False
-
 def change_key():
     global checking_key
     checking_key = False
 
 def update():
-    global x
-    global checking_key
-    if keyboard.p and admin.status.count(1) != len(admin.status) and not checking_key:   #Update status on if player is not gone, going, or ready
-        admin.status[x] = 1
-        x += 1
-        checking_key = True
+    if keyboard.p and admin.status.count(1) != len(admin.status) and not admin.checking_key:   #Update status on if player is not gone, going, or ready
+        admin.status[admin.cycle] = 1
+        admin.cycle += 1
+        admin.checking_key = True
         clock.schedule_unique(change_key, 1)
-    print(admin.status, x)
+    print(admin.status, admin.cycle)
     
     for players in admin.players:
         players.launch()
@@ -451,6 +448,10 @@ def update():
     admin.detect_collision()
     for unit in admin.players[0].units:
         unit.update_vector()
+    
+    for i in range(len(admin.status)):
+        if admin.status[i] == 2:
+            admin.status[i+1] = 1
     #for unit in p1.units:
         #x = randint(-10,10)
         #y = randint(-10,10)
