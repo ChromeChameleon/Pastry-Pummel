@@ -22,6 +22,7 @@ class Driver():
         self.board = ""
         self.cycle = 0          #Used to cycle through turn
         self.checking_key = False
+        self.turns = 0
     
     def setupPlayers(self):
         starting_pos = 100 #yes ik very scuffed will be changed later
@@ -50,7 +51,14 @@ class Driver():
         self.launch = True
         
     def play_turn(self):
-        pass
+        
+        self.start_launch()
+        self.turns += 1
+                
+        
+    def shrink(self):
+        self.board.shrink_board()
+        self.shrink_playerpos()
 
     def detect_collision(self):
         """
@@ -175,6 +183,7 @@ class Unit():
         self.line_vect = (0, 0)
         self.mag_line_vect = 0
         self.active_arrow = False
+        self.stopped = True
         
     def __repr__(self):
         return self.name
@@ -308,22 +317,25 @@ class Unit():
                 self.vx -= accx
             else:
                 self.vx = 0 # makes it stay at 0 once it reaches it
+                self.stopped = True
         elif self.vx < 0: #if vx is negative
             if self.launch_dir[0] == '-': # is true if vx should be negative
                 self.vx += accx
             else:
                 self.vx = 0 # makes it stay at 0 once it reaches it
-            
+                self.stopped = True
         if self.vy > 0: #if vy is positive
             if self.launch_dir[1] == '+': # is true if vy should be positive
                 self.vy -= accy
             else:
                 self.vy = 0 # makes it stay at 0 once it reaches it
+                self.stopped = True
         elif self.vy < 0: #if vy is negative
             if self.launch_dir[0] == '-': # is true if vy should be negative
                 self.vy += accy
             else:
                 self.vy = 0 # makes it stay at 0 once it reaches it
+                self.stopped = True
         #print(self.vx,self.vy)
 
 class Board():
@@ -411,8 +423,7 @@ def draw():
     
     admin.board.actor.draw()
     if time/60 >= 1:
-        admin.board.shrink_board()
-        admin.shrink_playerpos()
+        admin.shrink()
         
         time = 0
     """
@@ -439,7 +450,7 @@ def draw():
       '''      """
     turns += 1 #for testing
     """
-    #time += 1
+    time += 1
 
 def change_key():
     global checking_key
@@ -453,7 +464,7 @@ def update():
         clock.schedule_unique(change_key, 1)
     #print(admin.status, x)
     if keyboard.g:
-        admin.start_launch()
+        admin.play_turn()
     #print(admin.status, admin.cycle)
     
     for players in admin.players:
@@ -467,6 +478,7 @@ def update():
 
                 unit.move()
                 unit.acceleration()
+                
 
             #unit.move(randint(-10,10),randint(-10,10))
 
