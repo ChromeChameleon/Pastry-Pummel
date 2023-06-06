@@ -95,8 +95,12 @@ class Driver():
         #shifts the units pos relative to the distance from the center
         for player in self.players:
             for unit in player.units:
-                unit.x = cx - (cx-unit.x)*self.board.shrink_rate
+                unit.x = cx - (cx-unit.x)*self.board.shrink_rate #
                 unit.y = cy - (cy-unit.y)*self.board.shrink_rate
+                
+                #shifts units while not launching
+                unit.actor.x = unit.x
+                unit.actor.y = unit.y
             
       
 class Player():
