@@ -367,27 +367,30 @@ for players in admin.players:
 def on_mouse_down(pos):
     "Turns active_arrow True if mouse is held down and if mouse position is colliding with unit"
    # print(pos) #debugging
-    for unit in admin.players[0].units:
-        if unit.actor.collidepoint(pos):
-            unit.active_arrow = True
+    for player in admin.players:
+        for unit in player.units:
+            if unit.actor.collidepoint(pos):
+                unit.active_arrow = True
 
 def on_mouse_up(pos, button):
     "Turns active_arrow False if mouse is lifted up"
-    for unit in admin.players[0].units:
-        unit.active_arrow = False
+    for player in admin.players:
+        for unit in player.units:
+            unit.active_arrow = False
         
 def on_mouse_move(pos, rel, buttons):
     "Changes position of line vector if left click + active_arrow is True"
-    if not admin.players[0].ready_launch:
-        for unit in admin.players[0].units:
-            mag_mouse_vect = math.sqrt((pos[0] - unit.x)**2 + (pos[1] - unit.y)**2)  #Stores magnitude of theoretical line between unit and cursor
-            if mag_mouse_vect > max_arr_len:
-                factor = max_arr_len / mag_mouse_vect       #Create a multiplying factor if the line exceeds the maximum length
-            else:
-                factor = 1
-            if mouse.LEFT in buttons and unit.active_arrow:
-                unit.linex = unit.x + ((pos[0] - unit.x) * factor)       #Use similar triangles to develop an equation to readjust the position of the line
-                unit.liney = unit.y + ((pos[1] - unit.y) * factor)
+    for player in admin.players:
+        if not player.ready_launch:
+            for unit in player.units:
+                mag_mouse_vect = math.sqrt((pos[0] - unit.x)**2 + (pos[1] - unit.y)**2)  #Stores magnitude of theoretical line between unit and cursor
+                if mag_mouse_vect > max_arr_len:
+                    factor = max_arr_len / mag_mouse_vect       #Create a multiplying factor if the line exceeds the maximum length
+                else:
+                    factor = 1
+                if mouse.LEFT in buttons and unit.active_arrow:
+                    unit.linex = unit.x + ((pos[0] - unit.x) * factor)       #Use similar triangles to develop an equation to readjust the position of the line
+                    unit.liney = unit.y + ((pos[1] - unit.y) * factor)
             
 time = 0
 def draw():
@@ -410,10 +413,11 @@ def draw():
             #shrink constant multiplied by the turns.
     screen.draw.filled_rect(board,(255,255,255))
     """
-    for unit in admin.players[0].units:
-        screen.draw.line((unit.actor.x, unit.actor.y), (unit.linex, unit.liney), (50, 50, 50))
+    #for unit in admin.players[0].units:
+    #    screen.draw.line((unit.actor.x, unit.actor.y), (unit.linex, unit.liney), (50, 50, 50))
     for players in admin.players:
         for unit in players.units:
+            screen.draw.line((unit.actor.x, unit.actor.y), (unit.linex, unit.liney), (50, 50, 50))
             unit.actor.draw()
     
     for i in range(len(admin.status)):
@@ -425,7 +429,7 @@ def draw():
       '''      """
     turns += 1 #for testing
     """
-    time += 1
+    #time += 1
 
 def change_key():
     global checking_key
@@ -451,8 +455,9 @@ def update():
             #unit.move(randint(-10,10),randint(-10,10))
 
     admin.detect_collision()
-    for unit in admin.players[0].units:
-        unit.update_vector()
+    for player in admin.players:
+        for unit in player.units:
+            unit.update_vector()
     
     for i in range(len(admin.status)):
         if admin.status[i] == 2:
