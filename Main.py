@@ -8,6 +8,8 @@ import math
 
 WIDTH = 800
 HEIGHT = 800
+cx = WIDTH // 2 #x coord of centre of screen
+cy = HEIGHT // 2 # y coord of centre of screen
 uk = 0.0008
 max_arr_len = 200
 
@@ -84,12 +86,14 @@ class Driver():
         #make this relative to the top left corner of the board class
         #the area of the board (800^2): sqrt(64000*90%) = side length of the board after shrinkage (758.9)
         #800 - the side length  = the coordinate of the top left corner
-        #find x relative to top left corner and move it the percentage
-        """
+        
+        
+        #shifts the units pos relative to the distance from the center
         for player in self.players:
             for unit in player.units:
-                topcorner = self.board.topx
-         """       
+                unit.x = cx - (cx-unit.x)*self.board.shrink_rate
+                unit.y = cy - (cy-unit.y)*self.board.shrink_rate
+            
       
 class Player():
     """the player itself
@@ -321,7 +325,6 @@ class Board():
         self.topy = 0
         self.area = 0
         self.width = width
-        self.height = height
         self.shrink_rate = shrink_rate
         self.board = None
         self.actor = Actor("square",(WIDTH//2,HEIGHT//2))
@@ -331,6 +334,8 @@ class Board():
         #800 - the side length  = the coordinate of the top left corner
         if self.actor.scale >= 0.1:
             self.actor.scale *= self.shrink_rate
+            
+            #updates the pos of the top left corner
             self.area *= self.shrink_rate
             self.topx = 800-(self.area**0.5)
             self.topy = self.topx
@@ -353,11 +358,11 @@ admin.setupBoard(0.9)
 for players in admin.players:
         for unit in players.units:
             if players.team == "p1":
-                unit.update_v(3,1)
-                #unit.update_v(0,0) #for board shrinking purposes
+                #unit.update_v(3,1)
+                unit.update_v(0,0) #for board shrinking purposes
             else:
-                unit.update_v(-3,1)
-                #unit.update_v(0,0) #for board shrinking purposes
+                #unit.update_v(-3,1)
+                unit.update_v(0,0) #for board shrinking purposes
 
 def on_mouse_down(pos):
     "Turns active_arrow True if mouse is held down and if mouse position is colliding with unit"
@@ -393,8 +398,8 @@ def draw():
     
     admin.board.actor.draw()
     if time/60 >= 1:
-        #admin.shrink_playerpos()
         admin.board.shrink_board()
+        admin.shrink_playerpos()
         
         time = 0
     """
@@ -441,7 +446,7 @@ def update():
 #                 unit.update_v(5,0)
 #             else:
 #                 unit.update_v(-5,0)
-            #unit.move()
+            unit.move()
             unit.acceleration()
             #unit.move(randint(-10,10),randint(-10,10))
 
