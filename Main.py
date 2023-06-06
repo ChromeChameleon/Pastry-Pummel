@@ -369,10 +369,10 @@ for players in admin.players:
         for unit in players.units:
             if players.team == "p1":
                 #unit.update_v(3,1)
-                unit.update_v(0,0) #for board shrinking purposes
+                unit.update_v(3,1) #for board shrinking purposes
             else:
                 #unit.update_v(-3,1)
-                unit.update_v(0,0) #for board shrinking purposes
+                unit.update_v(-3,1) #for board shrinking purposes
 
 def on_mouse_down(pos):
     "Turns active_arrow True if mouse is held down and if mouse position is colliding with unit"
@@ -398,7 +398,7 @@ def on_mouse_move(pos, rel, buttons):
                     factor = max_arr_len / mag_mouse_vect       #Create a multiplying factor if the line exceeds the maximum length
                 else:
                     factor = 1
-                if mouse.LEFT in buttons and unit.active_arrow:
+                if mouse.LEFT in buttons and unit.active_arrow and admin.status[int(player.team[1])-1] == 1:
                     unit.linex = unit.x + ((pos[0] - unit.x) * factor)       #Use similar triangles to develop an equation to readjust the position of the line
                     unit.liney = unit.y + ((pos[1] - unit.y) * factor)
             
@@ -427,7 +427,8 @@ def draw():
     #    screen.draw.line((unit.actor.x, unit.actor.y), (unit.linex, unit.liney), (50, 50, 50))
     for players in admin.players:
         for unit in players.units:
-            screen.draw.line((unit.actor.x, unit.actor.y), (unit.linex, unit.liney), (50, 50, 50))
+            if admin.status[int(players.team[1])-1] == 1:          #Draw line if player is making their turn
+                screen.draw.line((unit.actor.x, unit.actor.y), (unit.linex, unit.liney), (50, 50, 50))
             unit.actor.draw()
     
     for i in range(len(admin.status)):
@@ -446,6 +447,7 @@ def change_key():
     checking_key = False
 
 def update():
+    #Start Game
     if keyboard.p and admin.status.count(1) != len(admin.status) and not admin.checking_key:   #Update status on if player is not gone, going, or ready
         admin.status[admin.cycle] = 1
         admin.cycle += 1
@@ -474,7 +476,6 @@ def update():
     for player in admin.players:
         for unit in player.units:
             unit.update_vector()
-    
 
     for i in range(len(admin.status)):
         if admin.status[i] == 2:
