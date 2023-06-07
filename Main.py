@@ -10,9 +10,9 @@ WIDTH = 800
 HEIGHT = 800
 cx = WIDTH // 2 #x coord of centre of screen
 cy = HEIGHT // 2 # y coord of centre of screen
-uk = 0.0008
+uk = 0.01 #coefficient of friction
 max_arr_len = 200
-
+powa = 0.1
 class Driver():
     def __init__(self):
         self.players = []
@@ -49,7 +49,9 @@ class Driver():
     
     def start_launch(self):
         self.launch = True
-        
+        for player in self.players:
+            for unit in player.units:
+                unit.launch_power()
     def play_turn(self):
         
         self.start_launch()
@@ -139,7 +141,7 @@ class Player():
         '''
         #print(admin.status[int(self.team[1])-1])
         for unit in self.units:
-            if unit.mag_line_vect < 25:           #Set a proper boundary in the future
+            if unit.mag_line_vect < unit.radius:           #Set a proper boundary in the future
                 self.ready_launch = False
                 return self.ready_launch
         if keyboard.SPACE and admin.status[int(self.team[1])-1] == 1:                            #Change to a button in the future - keyboard.SPACE is temporary
@@ -175,7 +177,7 @@ class Unit():
         self.actor.y = self.y 
         self.vx = 0
         self.vy = 0
-#         self.radius = radius
+        self.radius = 25
 #         self.colour = colour
 
         self.linex = x
@@ -188,7 +190,7 @@ class Unit():
     def __repr__(self):
         return self.name
     
-    def update_vector(self):
+    def update_line(self):
         '''
         
 
@@ -201,9 +203,25 @@ class Unit():
         mag_line_vect:
             Stores the magnitude of the line vector
         '''
-        self.line_vect = (self.linex - self.x), (self.y - self.liney)
+        self.line_vect = (self.linex - self.x), (self.liney - self.y)
         self.mag_line_vect = math.sqrt(self.line_vect[0]**2 + self.line_vect[1]**2)
+        
+        #angle relative to x axis 
+        if self.line_vect[0] != 0: # prevents division by zero error
+            self.line_angle = abs((math.atan(self.line_vect[1]/self.line_vect[0]))) #Radians
+        else:
+            self.line_angle = math.pi/2 #sets angle to pi/2 (90 deg) when vx = 0
+        
+       
         #print(self.line_vect)
+    def launch_power(self):
+        #self.visible_mag_line = self.mag_line_vect - self.radius #visible magniutude
+        if self.mag_line_vect != 0:
+            ratio = self.radius / self.mag_line_vect
+            x = self.line_vect[0] * (1-ratio) * powa
+            y = self.line_vect[1] * (1-ratio) * powa
+            self.update_v(x,y)
+
     def move(self):
         '''
         moves the units coordinates by its current x and y velocities
@@ -375,17 +393,6 @@ admin.setupBoard(0.9)
 #"""TEMP BOARD"""
 #board = Board(0,0,0.9) #width, height,shrink rate (only last one matters)
 
-
-#sets velocities of each unit (this is for testing only)
-for players in admin.players:
-        for unit in players.units:
-            if players.team == "p1":
-                #unit.update_v(3,1)
-                unit.update_v(3,1) #for board shrinking purposes
-            else:
-                #unit.update_v(-3,1)
-                unit.update_v(-3,1) #for board shrinking purposes
-
 def on_mouse_down(pos):
     "Turns active_arrow True if mouse is held down and if mouse position is colliding with unit"
    # print(pos) #debugging
@@ -451,7 +458,7 @@ def draw():
       '''      """
     turns += 1 #for testing
     """
-    time += 1
+    #time += 1
 
 def change_key():
     global checking_key
@@ -473,6 +480,7 @@ def update():
         players.commit()
         for unit in players.units:
             if admin.launch == True:
+                
 #             if players.team == "p1":
 #                 unit.update_v(5,0)
 #             else:
@@ -487,7 +495,7 @@ def update():
     admin.detect_collision()
     for player in admin.players:
         for unit in player.units:
-            unit.update_vector()
+            unit.update_line()
 
     for i in range(len(admin.status)):
         if admin.status[i] == 2:
