@@ -266,7 +266,7 @@ class Unit():
             self.launch_dir[0] = '-'
         if self.vy > 0:
             self.launch_dir[1] = '+'
-        elif self.vy > 0:
+        elif self.vy < 0:
             self.launch_dir[1] = '-'
         #print(self.launch_dir)
         
@@ -349,7 +349,7 @@ class Unit():
                 self.vy = 0 # makes it stay at 0 once it reaches it
                 self.stopped = True
         elif self.vy < 0: #if vy is negative
-            if self.launch_dir[0] == '-': # is true if vy should be negative
+            if self.launch_dir[1] == '-': # is true if vy should be negative
                 self.vy += accy
             else:
                 self.vy = 0 # makes it stay at 0 once it reaches it
