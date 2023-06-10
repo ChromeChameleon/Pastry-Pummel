@@ -6,8 +6,8 @@ from pgzhelper import *
 from random import *
 import math
 
-WIDTH = 800
-HEIGHT = 800
+WIDTH = 1200
+HEIGHT = 1000
 cx = WIDTH // 2 #x coord of centre of screen
 cy = HEIGHT // 2 # y coord of centre of screen
 uk = 0.01  #coefficient of friction
@@ -25,7 +25,7 @@ class Driver():
         self.turns = 0
     
     def setupPlayers(self):
-        starting_pos = 100 #yes ik very scuffed will be changed later
+        starting_pos = 300 #yes ik very scuffed will be changed later
         for i in range(1,3): #two players as I don't want to go insane
             p = Player(f"p{i}")
             p.make_team(4,starting_pos) #creates 4 units
@@ -45,7 +45,7 @@ class Driver():
             
     def setupBoard(self,shrink_rate):
         #setsup the game board
-        self.board = Board(0,0,shrink_rate)
+        self.board = Board(800,800,shrink_rate)
     
     def start_launch(self):
         self.launch = True
@@ -132,7 +132,24 @@ class Driver():
                 #shifts units while not launching
                 unit.actor.x = unit.x
                 unit.actor.y = unit.y
-            
+    
+    def units_fall(self):
+        #detects when the units fall off and handles them
+        #edge of board
+        #center = cx,cy
+        #Left edge = cx - board.width/2 , right edge = cx + board.width/2
+        #top edge = cy + board.width/2 , bottom edge = cy - board.width/2
+        for player in self.players:
+            for unit in player.units:
+                #print(self.board.width)
+                if unit.x < (cx-self.board.width/2) or unit.x > (cx+self.board.width/2):
+                    print(cx-self.board.width/2,cx+self.board.width/2)
+                    player.units.remove(unit)
+                    del unit
+                elif unit.y > (cy+self.board.width/2) or unit.y < (cy-self.board.width/2):
+                    print(cy+self.board.width/2,cy-self.board.width/2)
+                    player.units.remove(unit)
+                    del unit
       
 class Player():
     """the player itself
@@ -151,7 +168,7 @@ class Player():
     def make_team(self, units,starting_pos):
         """takes the # of units and their starting positions and creates a team of units"""
         xpos = starting_pos
-        ypos = 100
+        ypos = 200
         for i in range(units):
             self.units.append(Unit(xpos, ypos, 40, 'cookie',f"{self.team}cookie{i}"))
             ypos += 150
@@ -380,8 +397,8 @@ class Board():
     def __init__(self,width,height,shrink_rate):
         self.topx = 0
         self.topy = 0
-        self.area = 0
         self.width = width
+        self.area = self.width*2
         self.shrink_rate = shrink_rate
         self.board = None
         self.actor = Actor("square",(WIDTH//2,HEIGHT//2))
@@ -394,6 +411,7 @@ class Board():
             
             #updates the pos of the top left corner
             self.area *= self.shrink_rate
+            self.width = self.area*0.5
             self.topx = 800-(self.area**0.5)
             self.topy = self.topx
             
@@ -429,9 +447,9 @@ def on_mouse_move(pos, rel, buttons):
                     unit.linex = unit.x + ((pos[0] - unit.x) * factor)       #Use similar triangles to develop an equation to readjust the position of the line
                     unit.liney = unit.y + ((pos[1] - unit.y) * factor)
             
-time = 0
+#time = 0
 def draw():
-    global turns,time
+    global turns#,time
     
     screen.clear()
     screen.fill((50,100,150))
@@ -485,14 +503,14 @@ def change_key():
 
 def update():
     #Start Game
-
-    print(admin.launch)
+    
+    #print(admin.launch)
     if keyboard.SPACE and admin.status.count(1) != len(admin.status) and not admin.checking_key:   #Update status on if player is not gone, going, or ready
         admin.status[admin.cycle] = 1
         admin.cycle += 1
         admin.checking_key = True
         clock.schedule_unique(change_key, 1)
-    print(admin.status)
+    #print(admin.status)
     '''
     if keyboard.g:
         admin.play_turn()
@@ -513,6 +531,7 @@ def update():
                 unit.acceleration()
 
     admin.detect_collision()
+    admin.units_fall()
     for player in admin.players:
         for unit in player.units:
             unit.update_line()
