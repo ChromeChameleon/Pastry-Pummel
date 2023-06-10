@@ -126,8 +126,6 @@ class Driver():
         #make this relative to the top left corner of the board class
         #the area of the board (800^2): sqrt(64000*90%) = side length of the board after shrinkage (758.9)
         #800 - the side length  = the coordinate of the top left corner
-        
-        
         #shifts the units pos relative to the distance from the center
         for player in self.players:
             for unit in player.units:
@@ -182,7 +180,6 @@ class Player():
         '''
         Detects to see if the line vector magnitude is greater than zero and if the player is ready to launch
         '''
-        #print(admin.status[int(self.team[1])-1])
         for unit in self.units:
             if unit.mag_line_vect < unit.radius:           #Set a proper boundary in the future
                 self.ready_launch = False
@@ -222,8 +219,6 @@ class Unit():
         self.vx = 0
         self.vy = 0
         self.radius = 27
-#         self.colour = colour
-
         self.linex = x
         self.liney = y
         self.line_vect = (0, 0)
@@ -236,8 +231,6 @@ class Unit():
     
     def update_line(self):
         '''
-        
-
         Variables
         ---------
         linex,liney:
@@ -256,8 +249,6 @@ class Unit():
         else:
             self.line_angle = math.pi/2 #sets angle to pi/2 (90 deg) when vx = 0
         
-       
-        #print(self.line_vect)
     def launch_power(self):
         #self.visible_mag_line = self.mag_line_vect - self.radius #visible magniutude
         if self.mag_line_vect != 0:
@@ -296,8 +287,6 @@ class Unit():
             self.angle = abs((math.atan(self.vy/self.vx))) #Radians
         else:
             self.angle = math.pi/2 #sets angle to pi/2 (90 deg) when vx = 0
-            #print('hi')
-        #print(self.angle)
         self.launch_dir = ['',''] #[xdirection, ydirection]
         if self.vx > 0:
             self.launch_dir[0] = '+'
@@ -307,7 +296,6 @@ class Unit():
             self.launch_dir[1] = '+'
         elif self.vy < 0:
             self.launch_dir[1] = '-'
-        #print(self.launch_dir)
         
     def collision_calc(self, m2):
         '''
@@ -353,8 +341,6 @@ class Unit():
         
         self.update_v(v1fx,v1fy)
         m2.update_v(v2fx,v2fy)
-#         print(self.vx,self.vy)
-#         print(m2.vx,m2.vy)
 
     def acceleration(self):
         '''
@@ -365,10 +351,8 @@ class Unit():
         '''
         #fnet = ma, -Ff = ma, -ukFn = ma, -ukFg = ma, -ukmg = ma, -ukg = a
         acc = uk * 9.8
-        #print(self.angle)
         accx = acc * math.cos(self.angle) #calculates components
         accy = acc * math.sin(self.angle)
-        #print(accx,accy)
         if self.vx > 0: #if vx is positive
             if self.launch_dir[0] == '+': # is true if vx should be positive
                 self.vx -= accx
@@ -393,7 +377,6 @@ class Unit():
             else:
                 self.vy = 0 # makes it stay at 0 once it reaches it
                 self.stopped = True
-        #print(self.vx,self.vy)
 
 class Board():
     """the game board
@@ -426,7 +409,6 @@ admin.setupBoard(0.9)
 
 def on_mouse_down(pos):
     "Turns active_arrow True if mouse is held down and if mouse position is colliding with unit"
-   # print(pos) #debugging
     for player in admin.players:
         for unit in player.units:
             if unit.actor.collidepoint(pos):
@@ -451,11 +433,8 @@ def on_mouse_move(pos, rel, buttons):
                 if mouse.LEFT in buttons and unit.active_arrow and admin.status[int(player.team[1])-1] == 1:
                     unit.linex = unit.x + ((pos[0] - unit.x) * factor)       #Use similar triangles to develop an equation to readjust the position of the line
                     unit.liney = unit.y + ((pos[1] - unit.y) * factor)
-            
-#time = 0
+
 def draw():
-    global turns#,time
-    
     screen.clear()
     screen.fill((50,100,150))
     
@@ -464,8 +443,6 @@ def draw():
     if admin.status.count(0) == len(admin.status):
         screen.draw.text("Press SPACE to Start!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50)
 
-    #for unit in admin.players[0].units:
-    #    screen.draw.line((unit.actor.x, unit.actor.y), (unit.linex, unit.liney), (50, 50, 50))
     for players in admin.players:
         for unit in players.units:
             if admin.status[int(players.team[1])-1] == 1:          #Draw line if player is making their turn
@@ -487,10 +464,7 @@ def draw():
     for i in range(len(admin.status)):
         if admin.status[i] == 1:
             screen.draw.text(f"Player {i+1}'s turn", centerx = WIDTH/2, centery = 30)    
-    """
-    turns += 1 #for testing
-    """
-    
+
     if admin.status.count(2) == len(admin.status):           #Check if all indexes are 2 (aka if they're mid launching)
         if admin.end_turn():
             screen.draw.text("Click R to continue", centerx = WIDTH/2, centery = HEIGHT/2)
@@ -501,11 +475,16 @@ def draw():
     screen.draw.text(f"Turn: {admin.turns}", centerx = WIDTH - 100, centery = 30)
             
 def change_key():
+    '''
+    Called through a clock.schedule to prevent multiple registrations of a key
+    '''
     global checking_key
     checking_key = False
 
-def update():
-    #Start Game
+def update_status():
+    '''
+    Called in update and runs through all the conditions required to update admin.status
+    '''
     if keyboard.SPACE and admin.status.count(1) != len(admin.status) and not admin.checking_key:   #Update status on if player is not gone, going, or ready
         admin.status[admin.cycle] = 1
         admin.cycle += 1
@@ -516,25 +495,24 @@ def update():
         admin.status[-1] = 2
         admin.start_launch()
 
-    
-    for players in admin.players:
-        players.commit()
-        for unit in players.units:
-            if admin.launch == True:
-                
-                unit.move()
-                unit.acceleration()
-
-    admin.detect_collision()
-    admin.units_fall()
-    for player in admin.players:
-        for unit in player.units:
-            unit.update_line()
-
     for i in range(len(admin.status), 0, -1):
         if admin.status[i - 1] == 2 and admin.status[i-1] != admin.status[-1]:           #If an index is 2, change the next index to 1 (aka passing the turn)
             admin.status[i] = 1
             break
+
+def update():
+    #Start Game
+    for player in admin.players:
+        player.commit()
+        for unit in player.units:
+            unit.update_line()
+            if admin.launch:
+                unit.move()
+                unit.acceleration()
+                
+    admin.detect_collision()
+    admin.units_fall()
+    update_status()
 
 
 pgzrun.go()
