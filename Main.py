@@ -22,7 +22,7 @@ class Driver():
         self.board = ""
         self.cycle = 0          #Used to cycle through turn
         self.checking_key = False
-        self.turns = 0
+        self.turns = 1
     
     def setupPlayers(self):
         starting_pos = 300 #yes ik very scuffed will be changed later
@@ -52,12 +52,13 @@ class Driver():
         for player in self.players:
             for unit in player.units:
                 unit.launch_power()
-    def play_turn(self):
-        
-        self.start_launch()
-        self.turns += 1
                 
     def end_turn(self):
+        '''
+        Checks if all units are stopped moving
+        returns True if all units are stopped
+        returns False otherwise
+        '''
         for player in self.players:
             for unit in player.units:
                 if not unit.stopped:
@@ -65,8 +66,12 @@ class Driver():
         return True
     
     def next_turn(self):
+        '''
+        Resets attributes for next turn
+        '''
         self.cycle = 0
         self.launch = False
+        self.turns += 1
         admin.status = [1, 0, 0]
         for player in self.players:
             player.ready_launch = False
@@ -286,7 +291,7 @@ class Unit():
         self.vx = vx
         self.vy = vy
         self.stopped = False
-        
+
         if self.vx != 0: # prevents division by zero error
             self.angle = abs((math.atan(self.vy/self.vx))) #Radians
         else:
@@ -455,10 +460,7 @@ def draw():
     screen.fill((50,100,150))
     
     admin.board.actor.draw()
-    '''if time/60 >= 1:
-        admin.shrink()
-        time = 0
-        '''
+
     if admin.status.count(0) == len(admin.status):
         screen.draw.text("Press SPACE to Start!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50)
 
@@ -469,6 +471,7 @@ def draw():
             if admin.status[int(players.team[1])-1] == 1:          #Draw line if player is making their turn
                 screen.draw.line((unit.actor.x, unit.actor.y), (unit.linex, unit.liney), (50, 50, 50))
             if unit.mag_line_vect > unit.radius:
+
                 screen.draw.text("Press SPACE to commit turn", centerx = WIDTH/2, centery = HEIGHT - 50)
             
             #highlights players
@@ -476,26 +479,26 @@ def draw():
                 screen.draw.filled_circle((unit.x,unit.y),27,(255,0,0))
             elif players.team == "p2":
                 screen.draw.filled_circle((unit.x,unit.y),27,(0,0,255))
-             
+
+                screen.draw.text("Press SPACE to commit turn", centerx = WIDTH/2, centery = HEIGHT - 50)     #TODO: Fix so that it only shows if all lines are drawn back
+
             unit.actor.draw()
  
     for i in range(len(admin.status)):
         if admin.status[i] == 1:
             screen.draw.text(f"Player {i+1}'s turn", centerx = WIDTH/2, centery = 30)    
-    '''for players in admin.players:
-        if not players.ready_launch:
-            screen.draw.text(f"Player {players.team[1]}'s turn", (WIDTH/2, 30), color="orange")
-      '''      """
+    """
     turns += 1 #for testing
     """
     
-    if admin.status.count(2) == len(admin.status):
+    if admin.status.count(2) == len(admin.status):           #Check if all indexes are 2 (aka if they're mid launching)
         if admin.end_turn():
-            screen.draw.text("Continue Turn", centerx = WIDTH/2, centery = HEIGHT/2)
+            screen.draw.text("Click R to continue", centerx = WIDTH/2, centery = HEIGHT/2)
             if keyboard.r and admin.status.count(2) == len(admin.status):
                 admin.shrink()
                 admin.next_turn()
                 print("next turn")
+    screen.draw.text(f"Turn: {admin.turns}", centerx = WIDTH - 100, centery = 30)
             
 def change_key():
     global checking_key
@@ -503,23 +506,15 @@ def change_key():
 
 def update():
     #Start Game
-    
-    #print(admin.launch)
     if keyboard.SPACE and admin.status.count(1) != len(admin.status) and not admin.checking_key:   #Update status on if player is not gone, going, or ready
         admin.status[admin.cycle] = 1
         admin.cycle += 1
         admin.checking_key = True
         clock.schedule_unique(change_key, 1)
-    #print(admin.status)
-    '''
-    if keyboard.g:
-        admin.play_turn()
-        '''
-    #print(admin.status, admin.cycle)
     
     if admin.status.count(2) == len(admin.status) - 1:
         admin.status[-1] = 2
-        admin.play_turn()
+        admin.start_launch()
 
     
     for players in admin.players:
@@ -537,7 +532,7 @@ def update():
             unit.update_line()
 
     for i in range(len(admin.status), 0, -1):
-        if admin.status[i - 1] == 2 and admin.status[i-1] != admin.status[-1]:
+        if admin.status[i - 1] == 2 and admin.status[i-1] != admin.status[-1]:           #If an index is 2, change the next index to 1 (aka passing the turn)
             admin.status[i] = 1
             break
 
