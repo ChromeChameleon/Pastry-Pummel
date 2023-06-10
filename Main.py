@@ -492,17 +492,21 @@ def change_key():
 
 def update():
     #Start Game
+    print(admin.launch)
     if keyboard.SPACE and admin.status.count(1) != len(admin.status) and not admin.checking_key:   #Update status on if player is not gone, going, or ready
         admin.status[admin.cycle] = 1
         admin.cycle += 1
         admin.checking_key = True
         clock.schedule_unique(change_key, 1)
     print(admin.status)
+    '''
     if keyboard.g:
         admin.play_turn()
+        '''
     #print(admin.status, admin.cycle)
     
     if admin.status.count(2) == len(admin.status) - 1:
+        admin.status = [2, 2, 2]
         admin.play_turn()
 
     
@@ -528,7 +532,7 @@ def update():
             unit.update_line()
 
     for i in range(len(admin.status), 0, -1):
-        if admin.status[i - 1] == 2:
+        if admin.status[i - 1] == 2 and admin.status[i-1] != admin.status[-1]:
             admin.status[i] = 1
             break
     #for unit in p1.units:
