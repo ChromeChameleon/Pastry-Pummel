@@ -102,7 +102,8 @@ class Driver():
         for unit in colliders:
             collactors.append(unit.actor)
         
-        for units in self.actors: 
+        for units in self.actors:
+            #cricle_collidepoints -> cricular hitbox that prevents vibrating and glitching however still overlap
             index = units.actor.collidelist_pixel(collactors) #returns the index of the collider #actor
             if index != -1: # -1 means not colliding 0 - onwards is just index of list
                 #print(units,colliders[index]) #prints the coords of first penguin, and #coords of second penguin
@@ -250,12 +251,6 @@ class Unit():
         self.x += self.vx
         self.y += self.vy
         
-       # print(self.x, self.y, self.actor.x, self.actor.y)
-        #if self.x >= WIDTH or self.x <= 0:
-           # self.x = randint(200,600)
-        #if self.y >= HEIGHT or self.y <= 0:
-            #self.y = randint(200,600)
-        
         self.actor.x = self.x
         self.actor.y = self.y
     def update_v(self, vx, vy):
@@ -273,6 +268,7 @@ class Unit():
         '''
         self.vx = vx
         self.vy = vy
+        self.stopped = False
         
         if self.vx != 0: # prevents division by zero error
             self.angle = abs((math.atan(self.vy/self.vx))) #Radians
@@ -401,18 +397,9 @@ class Board():
             self.topx = 800-(self.area**0.5)
             self.topy = self.topx
             
-        
-        
-
-#u1 = Unit(WIDTH/2, HEIGHT/2, 40, 'penguinoes')
-#p1 = Player("red")
-#p1.make_team(4)
-
 admin = Driver()
 admin.setupPlayers()
 admin.setupBoard(0.9)
-#"""TEMP BOARD"""
-#board = Board(0,0,0.9) #width, height,shrink rate (only last one matters)
 
 def on_mouse_down(pos):
     "Turns active_arrow True if mouse is held down and if mouse position is colliding with unit"
@@ -456,15 +443,7 @@ def draw():
         '''
     if admin.status.count(0) == len(admin.status):
         screen.draw.text("Press SPACE to Start!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50)
-    
-    """
-    board = Rect((0+(SHRINK_CONSTANT/2)*turns,0+(SHRINK_CONSTANT/2)*turns,
-                  WIDTH - SHRINK_CONSTANT*turns,HEIGHT - SHRINK_CONSTANT*turns))#left,top,width,height
-            #moves the board left and down by multiplying the shrink constant by the number of turns,
-            #it is divided by two to keep it centered. The width and height are then subtracted by the
-            #shrink constant multiplied by the turns.
-    screen.draw.filled_rect(board,(255,255,255))
-    """
+
     #for unit in admin.players[0].units:
     #    screen.draw.line((unit.actor.x, unit.actor.y), (unit.linex, unit.liney), (50, 50, 50))
     for players in admin.players:
@@ -473,6 +452,13 @@ def draw():
                 screen.draw.line((unit.actor.x, unit.actor.y), (unit.linex, unit.liney), (50, 50, 50))
             if unit.mag_line_vect > unit.radius:
                 screen.draw.text("Press SPACE to commit turn", centerx = WIDTH/2, centery = HEIGHT - 50)
+            
+            #highlights players
+            if players.team == "p1":
+                screen.draw.filled_circle((unit.x,unit.y),27,(255,0,0))
+            elif players.team == "p2":
+                screen.draw.filled_circle((unit.x,unit.y),27,(0,0,255))
+             
             unit.actor.draw()
  
     for i in range(len(admin.status)):
@@ -499,6 +485,7 @@ def change_key():
 
 def update():
     #Start Game
+
     print(admin.launch)
     if keyboard.SPACE and admin.status.count(1) != len(admin.status) and not admin.checking_key:   #Update status on if player is not gone, going, or ready
         admin.status[admin.cycle] = 1
@@ -522,16 +509,8 @@ def update():
         for unit in players.units:
             if admin.launch == True:
                 
-#             if players.team == "p1":
-#                 unit.update_v(5,0)
-#             else:
-#                 unit.update_v(-5,0)
-
                 unit.move()
                 unit.acceleration()
-                
-
-            #unit.move(randint(-10,10),randint(-10,10))
 
     admin.detect_collision()
     for player in admin.players:
@@ -542,10 +521,7 @@ def update():
         if admin.status[i - 1] == 2 and admin.status[i-1] != admin.status[-1]:
             admin.status[i] = 1
             break
-    #for unit in p1.units:
-        #x = randint(-10,10)
-        #y = randint(-10,10)
-        #unit.move(x,y)
+
 
 pgzrun.go()
 
