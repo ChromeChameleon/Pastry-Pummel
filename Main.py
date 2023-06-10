@@ -10,8 +10,8 @@ WIDTH = 800
 HEIGHT = 800
 cx = WIDTH // 2 #x coord of centre of screen
 cy = HEIGHT // 2 # y coord of centre of screen
-uk = 0.01 #coefficient of friction
-max_arr_len = 200
+uk = 0.01  #coefficient of friction
+max_arr_len = 100
 powa = 0.1
 class Driver():
     def __init__(self):
@@ -70,6 +70,13 @@ class Driver():
         admin.status = [1, 0, 0]
         for player in self.players:
             player.ready_launch = False
+            for unit in player.units:
+                unit.line_vect = (0, 0)
+                unit.mag_line_vect = 0
+                unit.active_arrow = False
+                unit.linex = unit.x
+                unit.liney = unit.y
+
     
     def shrink(self):
         self.board.shrink_board()
@@ -191,7 +198,7 @@ class Unit():
         self.actor.y = self.y 
         self.vx = 0
         self.vy = 0
-        self.radius = 25
+        self.radius = 27
 #         self.colour = colour
 
         self.linex = x
@@ -443,10 +450,10 @@ def draw():
     screen.fill((50,100,150))
     
     admin.board.actor.draw()
-    if time/60 >= 1:
+    '''if time/60 >= 1:
         admin.shrink()
         time = 0
-        
+        '''
     if admin.status.count(0) == len(admin.status):
         screen.draw.text("Press SPACE to Start!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50)
     
@@ -477,12 +484,12 @@ def draw():
       '''      """
     turns += 1 #for testing
     """
-    #time += 1
     
-    if admin.status.count(2) == len(admin.status) - 1:
+    if admin.status.count(2) == len(admin.status):
         if admin.end_turn():
             screen.draw.text("Continue Turn", centerx = WIDTH/2, centery = HEIGHT/2)
-            if keyboard.r:
+            if keyboard.r and admin.status.count(2) == len(admin.status):
+                admin.shrink()
                 admin.next_turn()
                 print("next turn")
             
@@ -506,7 +513,7 @@ def update():
     #print(admin.status, admin.cycle)
     
     if admin.status.count(2) == len(admin.status) - 1:
-        admin.status = [2, 2, 2]
+        admin.status[-1] = 2
         admin.play_turn()
 
     
