@@ -23,10 +23,10 @@ class Driver():
         self.cycle = 0          #Used to cycle through turn
         self.checking_key = False
         self.turns = 1
-        self.terminate_game = False
+        self.terminate_game = False     #Check if the game has fully ended
     
     def setupPlayers(self):
-        starting_pos = 300 #yes ik very scuffed will be changed later
+        starting_pos = 100 #yes ik very scuffed will be changed later
         for i in range(1,3): #two players as I don't want to go insane
             p = Player(f"p{i}")
             p.make_team(4,starting_pos) #creates 4 units
@@ -163,15 +163,25 @@ class Driver():
             for unit in player.units:
                 #print(self.board.width)
                 if unit.x < (cx-self.board.width/2) or unit.x > (cx+self.board.width/2):
-                    print(cx-self.board.width/2,cx+self.board.width/2)
-                    player.units.remove(unit)
-                    del unit
+                    if admin.status.count(0) != len(admin.status):
+                        print(cx-self.board.width/2,cx+self.board.width/2)
+                        player.units.remove(unit)
+                        del unit
+                    else:
+                        return False
                 elif unit.y > (cy+self.board.width/2) or unit.y < (cy-self.board.width/2):
-                    print(cy+self.board.width/2,cy-self.board.width/2)
-                    player.units.remove(unit)
-                    del unit
+                    if admin.status.count(0) != len(admin.status):
+                        print(cy+self.board.width/2,cy-self.board.width/2)
+                        player.units.remove(unit)
+                        del unit
+                    else:
+                        return False
+        return True
     
     def game_over(self, player):
+        '''
+        Check if a player has lost
+        '''
         if player.units == []:
             return True
         return False
@@ -458,30 +468,37 @@ def on_mouse_move(pos, rel, buttons):
     for player in admin.players:
         if not player.ready_launch:
             for unit in player.units:
-                mag_mouse_vect = math.sqrt((pos[0] - unit.x)**2 + (pos[1] - unit.y)**2)  #Stores magnitude of theoretical line between unit and cursor
-                if mag_mouse_vect > max_arr_len:
-                    factor = max_arr_len / mag_mouse_vect       #Create a multiplying factor if the line exceeds the maximum length
-                else:
-                    factor = 1
-                if mouse.LEFT in buttons and unit.active_arrow and admin.status[int(player.team[1])-1] == 1:
-                    unit.linex = unit.x + ((pos[0] - unit.x) * factor)       #Use similar triangles to develop an equation to readjust the position of the line
-                    unit.liney = unit.y + ((pos[1] - unit.y) * factor)
+                if admin.status.count(0) != len(admin.status):
+                    mag_mouse_vect = math.sqrt((pos[0] - unit.x)**2 + (pos[1] - unit.y)**2)  #Stores magnitude of theoretical line between unit and cursor
+                    if mag_mouse_vect > max_arr_len:
+                        factor = max_arr_len / mag_mouse_vect       #Create a multiplying factor if the line exceeds the maximum length
+                    else:
+                        factor = 1
+                    if mouse.LEFT in buttons and unit.active_arrow and admin.status[int(player.team[1])-1] == 1:
+                        unit.linex = unit.x + ((pos[0] - unit.x) * factor)       #Use similar triangles to develop an equation to readjust the position of the line
+                        unit.liney = unit.y + ((pos[1] - unit.y) * factor)
+                elif unit.active_arrow:                    #NOTE: unit.active_arrow now also represents a bool that determines if a unit is being dragged
+                    unit.actor.x = pos[0]
+                    unit.x = unit.actor.x
+                    unit.actor.y = pos[1]
+                    unit.y = unit.actor.y
+                    unit.linex = unit.actor.x
+                    unit.liney = unit.actor.y
 
 def draw():
     screen.clear()
     screen.fill((50,100,150))
     
     admin.board.actor.draw()
-
     if admin.status.count(0) == len(admin.status):
-        screen.draw.text("Press SPACE to Start!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50)
-
+        screen.draw.text("Select Your Characters!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50)
+    
     for players in admin.players:
-        if players.loser:
-            if players.team[1] == '1':
-                screen.draw.text("Player 2 Wins!", centerx = WIDTH/2, centery = HEIGHT/2)
+        if players.loser and admin.status.count(2) == len(admin.status):
+            if players.team[1] == '1':               #Check for team that DIDN'T lose
+                screen.draw.text("Player 2 Wins!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50)
             else:
-                screen.draw.text("Player 1 Wins!", centerx = WIDTH/2, centery = HEIGHT/2)
+                screen.draw.text("Player 1 Wins!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50)
             admin.terminate_game = True
                 
         
@@ -497,8 +514,6 @@ def draw():
                 screen.draw.filled_circle((unit.x,unit.y),27,(255,0,0))
             elif players.team == "p2":
                 screen.draw.filled_circle((unit.x,unit.y),27,(0,0,255))
-
-                #screen.draw.text("Press SPACE to commit turn", centerx = WIDTH/2, centery = HEIGHT - 50)     #TODO: Fix so that it only shows if all lines are drawn back
 
             unit.actor.draw()
  
@@ -526,7 +541,7 @@ def update_status():
     '''
     Called in update and runs through all the conditions required to update admin.status
     '''
-    if keyboard.SPACE and admin.status.count(1) != len(admin.status) and not admin.checking_key:   #Update status on if player is not gone, going, or ready
+    if keyboard.SPACE and admin.status.count(1) != len(admin.status) and not admin.checking_key and admin.units_fall():   #Update status on if player is not gone, going, or ready
         admin.status[admin.cycle] = 1
         admin.cycle += 1
         admin.checking_key = True
@@ -546,7 +561,6 @@ def update():
     for player in admin.players:
         player.commit()
         player.loser = admin.game_over(player)
-        #print(player.loser)
         for unit in player.units:
             unit.update_line()
             if admin.launch:
@@ -555,7 +569,8 @@ def update():
                 
     admin.detect_collision()
     admin.inc_collided_count()
-    admin.units_fall()
+    if admin.status.count(0) != len(admin.status):
+        admin.units_fall()
     update_status()
 
 pgzrun.go()
