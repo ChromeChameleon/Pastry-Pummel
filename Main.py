@@ -492,15 +492,22 @@ def draw():
     admin.board.actor.draw()
     if admin.status.count(0) == len(admin.status):
         screen.draw.text("Select Your Characters!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50)
-    
-    for players in admin.players:
-        if players.loser and admin.status.count(2) == len(admin.status):
-            if players.team[1] == '1':               #Check for team that DIDN'T lose
-                screen.draw.text("Player 2 Wins!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50)
-            else:
-                screen.draw.text("Player 1 Wins!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50)
+        
+    #decides who is the winner
+    for i in range(len(admin.players)):
+        if admin.players[0].loser and admin.players[1].loser:
+            screen.draw.text("Everybody Loses :), the system wins", centerx = WIDTH/2, centery = HEIGHT/2)
             admin.terminate_game = True
-                
+            
+        elif admin.players[0].loser:
+            screen.draw.text("Player 2 Wins!", centerx = WIDTH/2, centery = HEIGHT/2)
+            admin.terminate_game = True
+            
+        elif admin.players[1].loser:
+            screen.draw.text("Player 1 Wins!", centerx = WIDTH/2, centery = HEIGHT/2)
+            admin.terminate_game = True  
+
+    for players in admin.players:
         
         for unit in players.units:
             if admin.status[int(players.team[1])-1] == 1:          #Draw line if player is making their turn
