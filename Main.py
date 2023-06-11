@@ -546,7 +546,7 @@ def update():
     for player in admin.players:
         player.commit()
         player.loser = admin.game_over(player)
-        print(player.loser)
+        #print(player.loser)
         for unit in player.units:
             unit.update_line()
             if admin.launch:
