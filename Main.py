@@ -121,6 +121,22 @@ class Driver():
              
 #             except: #for testing purposes as to not crash the code for no reason
 #                 print('error')
+    def inc_collided_count(self):
+        '''
+        increases the count of each unit that the unit has recently collided with
+        to create a cooldown
+        '''
+        for unit in self.actors:
+            remove = []
+            for key in unit.collided: 
+                unit.collided[key] += 1
+                if unit.collided[key] >= 8: #8 frame cooldown
+                    remove.append(key) #the keys to remove are appended to a list
+                                       #and then removed after because you can't do it
+                                       #while the dict is being iterated through.
+            for item in remove:
+                unit.collided.pop(item)
+        
     def shrink_playerpos(self):
         #changes player position depending on size of board
         #make this relative to the top left corner of the board class
@@ -193,6 +209,8 @@ class Unit():
     liney: the y position of the units launch line
     line_vect: Stores the vector components of the line relative to the unit's position
     mag_line_vect: Stores the magnitude of the line vector
+    collided: a dictionary which stores the units that were recntly collided with (as the
+    key) and the amount of frames since that collision as the value
     '''
     def __init__(self, x, y, mass, actor,name):
         self.name = name
@@ -213,6 +231,7 @@ class Unit():
         self.mag_line_vect = 0
         self.active_arrow = False
         self.stopped = True
+        self.collided = {}
         
     def __repr__(self):
         return self.name
@@ -303,39 +322,41 @@ class Unit():
         m2: unit object
             the unit that is being collided with
         '''
-        m1mass = self.mass
-        m2mass = m2.mass
-        #x direction
-        v1ix = self.vx
-        v2ix = m2.vx
-        #set m2 frame of reference
-        v1ix -= v2ix
-        v2ix = 0
-        
-        v1fx = v1ix*((m1mass-m2mass)/(m1mass+m2mass))
-        v2fx = (2*m1mass*v1ix)/(m1mass+m2mass)
-        
-        #set back to global f.o.r
-        v1fx += m2.vx
-        v2fx += m2.vx
-        
-        
-        #y direction
-        v1iy = self.vy
-        v2iy = m2.vy
-        #set m2 frame of reference
-        v1iy -= v2iy
-        v2iy = 0
-        
-        v1fy = v1iy*((m1mass-m2mass)/(m1mass+m2mass))
-        v2fy = (2*m1mass*v1iy)/(m1mass+m2mass)
-        
-        #set back to global f.o.r
-        v1fy += m2.vy
-        v2fy += m2.vy
-        
-        self.update_v(v1fx,v1fy)
-        m2.update_v(v2fx,v2fy)
+        if m2 not in self.collided: #only collides if it wasn't recently collided with
+            self.collided[m2] = 0
+            m1mass = self.mass
+            m2mass = m2.mass
+            #x direction
+            v1ix = self.vx
+            v2ix = m2.vx
+            #set m2 frame of reference
+            v1ix -= v2ix
+            v2ix = 0
+            
+            v1fx = v1ix*((m1mass-m2mass)/(m1mass+m2mass))
+            v2fx = (2*m1mass*v1ix)/(m1mass+m2mass)
+            
+            #set back to global f.o.r
+            v1fx += m2.vx
+            v2fx += m2.vx
+            
+            
+            #y direction
+            v1iy = self.vy
+            v2iy = m2.vy
+            #set m2 frame of reference
+            v1iy -= v2iy
+            v2iy = 0
+            
+            v1fy = v1iy*((m1mass-m2mass)/(m1mass+m2mass))
+            v2fy = (2*m1mass*v1iy)/(m1mass+m2mass)
+            
+            #set back to global f.o.r
+            v1fy += m2.vy
+            v2fy += m2.vy
+            
+            self.update_v(v1fx,v1fy)
+            m2.update_v(v2fx,v2fy)
 #         print(self.vx,self.vy)
 #         print(m2.vx,m2.vy)
 
@@ -357,25 +378,23 @@ class Unit():
                 self.vx -= accx
             else:
                 self.vx = 0 # makes it stay at 0 once it reaches it
-                self.stopped = True
         elif self.vx < 0: #if vx is negative
             if self.launch_dir[0] == '-': # is true if vx should be negative
                 self.vx += accx
             else:
                 self.vx = 0 # makes it stay at 0 once it reaches it
-                self.stopped = True
         if self.vy > 0: #if vy is positive
             if self.launch_dir[1] == '+': # is true if vy should be positive
                 self.vy -= accy
             else:
                 self.vy = 0 # makes it stay at 0 once it reaches it
-                self.stopped = True
         elif self.vy < 0: #if vy is negative
             if self.launch_dir[1] == '-': # is true if vy should be negative
                 self.vy += accy
             else:
                 self.vy = 0 # makes it stay at 0 once it reaches it
-                self.stopped = True
+        if self.vx == 0 and self.vy == 0:
+            self.stopped = True
         #print(self.vx,self.vy)
 
 class Board():
@@ -508,6 +527,7 @@ def update():
                 unit.acceleration()
 
     admin.detect_collision()
+    admin.inc_collided_count()
     for player in admin.players:
         for unit in player.units:
             unit.update_line()
@@ -516,7 +536,8 @@ def update():
         if admin.status[i - 1] == 2 and admin.status[i-1] != admin.status[-1]:           #If an index is 2, change the next index to 1 (aka passing the turn)
             admin.status[i] = 1
             break
-
+    
+    
 
 pgzrun.go()
 
