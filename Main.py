@@ -15,6 +15,7 @@ max_arr_len = 100
 powa = 0.1
 class Driver():
     def __init__(self):
+        self.raccoons= []
         self.players = []
         self.actors = []
         self.status = [0]
@@ -152,7 +153,13 @@ class Driver():
                 #shifts units while not launching
                 unit.actor.x = unit.x
                 unit.actor.y = unit.y
-    
+    def create_raccoon(self,x,y,pastry):
+        #creates a raccoon at the fallen unit position
+        r = Raccoon(x,y,pastry) #creates a raccoon
+        r.set_images(pastry) #sets the animation set
+        self.raccoons.append(r)
+        
+   
     def units_fall(self):
         #detects when the units fall off and handles them
         #edge of board
@@ -164,10 +171,18 @@ class Driver():
                 #print(self.board.width)
                 if unit.x < (cx-self.board.width/2) or unit.x > (cx+self.board.width/2):
                     print(cx-self.board.width/2,cx+self.board.width/2)
+                    
+                    #spawn raccoons
+                    self.create_raccoon(unit.x,unit.y,unit.pastry)
+                    
                     player.units.remove(unit)
                     del unit
                 elif unit.y > (cy+self.board.width/2) or unit.y < (cy-self.board.width/2):
                     print(cy+self.board.width/2,cy-self.board.width/2)
+                    
+                    #spawn raccoons
+                    self.create_raccoon(unit.x,unit.y,unit.pastry)
+                    
                     player.units.remove(unit)
                     del unit
     
@@ -194,10 +209,11 @@ class Player():
        
     def make_team(self, units,starting_pos):
         """takes the # of units and their starting positions and creates a team of units"""
+        pastries = ["cookie","c_roll","donut","eggtart"]
         xpos = starting_pos
         ypos = 200
         for i in range(units):
-            self.units.append(Unit(xpos, ypos, 40, 'cookie',f"{self.team}cookie{i}"))
+            self.units.append(Unit(xpos, ypos, 40, pastries[i],f"{self.team}{pastries[i]}{i}"))
             ypos += 150
     
     def commit(self):
@@ -236,6 +252,7 @@ class Unit():
     '''
     def __init__(self, x, y, mass, actor,name):
         self.name = name
+        self.pastry = actor
         self.x = x
         self.y = y
         self.mass = mass
@@ -422,7 +439,7 @@ class Board():
         self.area = self.width*2
         self.shrink_rate = shrink_rate
         self.board = None
-        self.actor = Actor("square",(WIDTH//2,HEIGHT//2))
+        self.actor = Actor("icy",(WIDTH//2,HEIGHT//2))
     def shrink_board(self):
         #make this relative to the top left corner of the board class
         #the area of the board (800^2): sqrt(64000*90%) = side length of the board after shrinkage (758.9)
@@ -436,6 +453,31 @@ class Board():
             self.topx = 800-(self.area**0.5)
             self.topy = self.topx
             
+class Raccoon():
+    """trash panda"""
+    
+    def __init__(self,x,y,pastry):
+        self.actor = Actor("penguinoes")
+        self.pastry = pastry
+        self.actor.images = ["penguinoes","donut 100x100 look at its glory"]
+        self.actor.fps = 6
+        self.actor.x = x
+        self.actor.y = y
+    
+    def set_images(self,pastry):
+        if pastry == "cookie":
+            self.actor.images = ['000', '001', '002', 'rc003', 'rc004', 'rc005', 'rc006', '007', '008', '009', '010']
+        elif pastry == "c_roll":
+            self.actor.images = ['000', '001', '002', 'rcr003', 'rcr004', 'rcr005', 'rcr006', '007', '008', '009', '010']
+        elif pastry == "donut":
+            self.actor.images = ['000', '001', '002', 'rd003', 'rd004', 'rd005', 'rd006', '007', '008', '009', '010']
+        elif pastry == "eggtart":
+            self.actor.images = ['000', '001', '002', 'ret003', 'ret004', 'ret005', 'ret006', '007', '008', '009', '010']
+    
+    def consume(self):
+        self.actor.animate()
+        
+    
 admin = Driver()
 admin.setupPlayers()
 admin.setupBoard(0.9)
@@ -521,7 +563,12 @@ def draw():
                 admin.next_turn()
                 print("next turn")
     screen.draw.text(f"Turn: {admin.turns}", centerx = WIDTH - 100, centery = 30)
-            
+    
+    #draws all the raccoons who eat the fallen pieces
+    for raccoon in admin.raccoons:
+        raccoon.actor.draw()
+        raccoon.consume()
+    
 def change_key():
     '''
     Called through a clock.schedule to prevent multiple registrations of a key
