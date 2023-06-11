@@ -25,6 +25,12 @@ class Driver():
         self.checking_key = False
         self.turns = 1
         self.terminate_game = False     #Check if the game has fully ended
+        self.screen = 'game'
+    
+    def title_screen(self):
+        pass
+    def game_screen(self):
+        pass
     
     def setupPlayers(self):
         starting_pos = 100 #yes ik very scuffed will be changed later
@@ -489,11 +495,6 @@ class Raccoon():
     
     def consume(self):
         self.actor.animate()
-        
-    
-admin = Driver()
-admin.setupPlayers()
-admin.setupBoard(0.9)
 
 def on_mouse_down(pos):
     "Turns active_arrow True if mouse is held down and if mouse position is colliding with unit"
@@ -629,7 +630,12 @@ def update():
     if admin.status.count(0) != len(admin.status):
         admin.units_fall()
     update_status()
+def main():
+    global admin
+    admin = Driver()
+    admin.setupPlayers()
+    admin.setupBoard(0.9)
+    pgzrun.go()
 
-pgzrun.go()
-
+main()
 
