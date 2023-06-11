@@ -23,6 +23,7 @@ class Driver():
         self.cycle = 0          #Used to cycle through turn
         self.checking_key = False
         self.turns = 1
+        self.terminate_game = False
     
     def setupPlayers(self):
         starting_pos = 300 #yes ik very scuffed will be changed later
@@ -169,6 +170,12 @@ class Driver():
                     print(cy+self.board.width/2,cy-self.board.width/2)
                     player.units.remove(unit)
                     del unit
+    
+    def game_over(self, player):
+        if player.units == []:
+            return True
+        return False
+                
       
 class Player():
     """the player itself
@@ -183,6 +190,7 @@ class Player():
         self.team = team #team eg player 1 or 2
         self.units = [] # list of unit objects
         self.ready_launch = False
+        self.loser = False
        
     def make_team(self, units,starting_pos):
         """takes the # of units and their starting positions and creates a team of units"""
@@ -469,6 +477,14 @@ def draw():
         screen.draw.text("Press SPACE to Start!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50)
 
     for players in admin.players:
+        if players.loser:
+            if players.team[1] == '1':
+                screen.draw.text("Player 2 Wins!", centerx = WIDTH/2, centery = HEIGHT/2)
+            else:
+                screen.draw.text("Player 1 Wins!", centerx = WIDTH/2, centery = HEIGHT/2)
+            admin.terminate_game = True
+                
+        
         for unit in players.units:
             if admin.status[int(players.team[1])-1] == 1:          #Draw line if player is making their turn
                 screen.draw.line((unit.actor.x, unit.actor.y), (unit.linex, unit.liney), (50, 50, 50))
@@ -482,7 +498,7 @@ def draw():
             elif players.team == "p2":
                 screen.draw.filled_circle((unit.x,unit.y),27,(0,0,255))
 
-                screen.draw.text("Press SPACE to commit turn", centerx = WIDTH/2, centery = HEIGHT - 50)     #TODO: Fix so that it only shows if all lines are drawn back
+                #screen.draw.text("Press SPACE to commit turn", centerx = WIDTH/2, centery = HEIGHT - 50)     #TODO: Fix so that it only shows if all lines are drawn back
 
             unit.actor.draw()
  
@@ -491,7 +507,7 @@ def draw():
             screen.draw.text(f"Player {i+1}'s turn", centerx = WIDTH/2, centery = 30)    
 
     if admin.status.count(2) == len(admin.status):           #Check if all indexes are 2 (aka if they're mid launching)
-        if admin.end_turn():
+        if admin.end_turn() and not admin.terminate_game:
             screen.draw.text("Click R to continue", centerx = WIDTH/2, centery = HEIGHT/2)
             if keyboard.r and admin.status.count(2) == len(admin.status):
                 admin.shrink()
@@ -520,7 +536,6 @@ def update_status():
         admin.status[-1] = 2
         admin.start_launch()
 
-
     for i in range(len(admin.status), 0, -1):
         if admin.status[i - 1] == 2 and admin.status[i-1] != admin.status[-1]:           #If an index is 2, change the next index to 1 (aka passing the turn)
             admin.status[i] = 1
@@ -530,6 +545,8 @@ def update():
     #Start Game
     for player in admin.players:
         player.commit()
+        player.loser = admin.game_over(player)
+        print(player.loser)
         for unit in player.units:
             unit.update_line()
             if admin.launch:
