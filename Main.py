@@ -11,8 +11,8 @@ HEIGHT = 1000
 cx = WIDTH // 2 #x coord of centre of screen
 cy = HEIGHT // 2 # y coord of centre of screen
 uk = 0.01  #coefficient of friction
-max_arr_len = 100
-powa = 0.1
+max_arr_len = 200
+powa = 0.05
 class Driver():
     def __init__(self):
         self.raccoons= []
@@ -72,7 +72,7 @@ class Driver():
                 if not unit.stopped:
                     return False
         return True
-    
+
     def next_turn(self):
         '''
         Resets attributes for next turn
@@ -542,15 +542,15 @@ def draw():
     #decides who is the winner
     for i in range(len(admin.players)):
         if admin.players[0].loser and admin.players[1].loser:
-            screen.draw.text("Everybody Loses :), the system wins", centerx = WIDTH/2, centery = HEIGHT/2)
+            screen.draw.text("Everybody Loses :), the system wins", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50)
             admin.terminate_game = True
             
         elif admin.players[0].loser:
-            screen.draw.text("Player 2 Wins!", centerx = WIDTH/2, centery = HEIGHT/2)
+            screen.draw.text("Player 2 Wins!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50)
             admin.terminate_game = True
             
         elif admin.players[1].loser:
-            screen.draw.text("Player 1 Wins!", centerx = WIDTH/2, centery = HEIGHT/2)
+            screen.draw.text("Player 1 Wins!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50)
             admin.terminate_game = True  
 
     for players in admin.players:
