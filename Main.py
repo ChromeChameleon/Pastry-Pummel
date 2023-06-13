@@ -557,8 +557,25 @@ def draw():
     for players in admin.players:
         
         for unit in players.units:
-            if admin.status[int(players.team[1])-1] == 1 or admin.draw_lines:          #Draw line if player is making their turn
+            #Draw line if player is making their turn
+            if admin.status[int(players.team[1])-1] == 1 or admin.draw_lines:
+                a = Actor("arrow")
+                a.x = unit.linex
+                a.y = unit.liney
+                
+
+                if (unit.linex - unit.actor.x) != 0:
+                    a.angle = math.degrees(math.atan((unit.liney - unit.actor.y)/(unit.linex - unit.actor.x)))
+
+                elif (unit.linex - unit.actor.x) < 0:
+                    a.angle = -90
+                elif (unit.linex - unit.actor.x) > 0:
+                    a.angle = 90
+#            
+                print(a.angle)
+                a.draw()
                 screen.draw.line((unit.actor.x, unit.actor.y), (unit.linex, unit.liney), (50, 50, 50))
+                
             if unit.mag_line_vect > unit.radius:
 
                 screen.draw.text("Press SPACE to commit turn", centerx = WIDTH/2, centery = HEIGHT - 50)
