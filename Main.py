@@ -14,19 +14,44 @@ uk = 0.01  #coefficient of friction
 max_arr_len = 200
 powa = 0.05
 class Driver():
+    '''
+    Runs the code
+    
+    Attributes:
+    -----------
+    actors: List
+        Stores a list of unit actors
+    players: List
+        Stores a list of players in the game
+    raccoons: List
+        Stores a list of raccoon actors
+    status: List
+        Stores the game's current turn status (who's turn it is, etc)
+    cycle: Int
+        Stores an integer that cycles through a turn (related to status)
+    turns: Int
+        Stores the game's number of turns
+    board: String / Object
+        Initialized as a string but eventually stores a Board object
+    screen: String
+        Stores the current screen that the game is displaying
+    '''
     def __init__(self):
-        self.raccoons= []
-        self.players = []
         self.actors = []
+        self.players = []
+        self.raccoons= []
         self.status = [0]
-        self.launch = False
-        self.board = ""
-        self.cycle = 0          #Used to cycle through turn
-        self.checking_key = False
+        
+        self.cycle = 0
         self.turns = 1
-        self.terminate_game = False     #Check if the game has fully ended
+
+        self.board = ""
         self.screen = 'game'
+        
+        self.checking_key = False
         self.draw_lines = False
+        self.launch = False
+        self.terminate_game = False
     
     def title_screen(self):
         pass
@@ -34,6 +59,9 @@ class Driver():
         pass
     
     def setupPlayers(self):
+        '''
+        Creates the actors and the positions
+        '''
         starting_pos = 100 #yes ik very scuffed will be changed later
         for i in range(1,3): #two players as I don't want to go insane
             p = Player(f"p{i}")
@@ -538,20 +566,20 @@ def draw():
     
     admin.board.actor.draw()
     if admin.status.count(0) == len(admin.status):
-        screen.draw.text("Select Your Characters!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50)
+        screen.draw.text("Select Your Characters!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (64, 0, 255))
         
     #decides who is the winner
     for i in range(len(admin.players)):
         if admin.players[0].loser and admin.players[1].loser:
-            screen.draw.text("Everybody Loses :), the system wins", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50)
+            screen.draw.text("Everybody Loses :), the system wins", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (64, 0, 255))
             admin.terminate_game = True
             
         elif admin.players[0].loser:
-            screen.draw.text("Player 2 Wins!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50)
+            screen.draw.text("Player 2 Wins!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (64, 0, 255))
             admin.terminate_game = True
             
         elif admin.players[1].loser:
-            screen.draw.text("Player 1 Wins!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50)
+            screen.draw.text("Player 1 Wins!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (64, 0, 255))
             admin.terminate_game = True  
 
     for players in admin.players:
@@ -577,7 +605,7 @@ def draw():
 
     if admin.status.count(2) == len(admin.status):           #Check if all indexes are 2 (aka if they're mid launching)
         if admin.end_turn() and not admin.terminate_game and not admin.draw_lines:
-            screen.draw.text("Click R to continue", centerx = WIDTH/2, centery = HEIGHT/2)
+            screen.draw.text("Click R to continue", centerx = WIDTH/2, centery = HEIGHT/2, color = (64, 0, 255))
             if keyboard.r and admin.status.count(2) == len(admin.status):
                 admin.shrink()
                 admin.next_turn()
@@ -609,7 +637,7 @@ def update_status():
     if admin.status.count(2) == len(admin.status) - 1:
         admin.status[-1] = 2
         admin.draw_lines = True
-        clock.schedule_unique(admin.start_launch, 2)
+        clock.schedule_unique(admin.start_launch, 2)   #Delay launch by 2 seconds
 
     for i in range(len(admin.status), 0, -1):
         if admin.status[i - 1] == 2 and admin.status[i-1] != admin.status[-1]:           #If an index is 2, change the next index to 1 (aka passing the turn)
