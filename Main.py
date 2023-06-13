@@ -26,6 +26,7 @@ class Driver():
         self.turns = 1
         self.terminate_game = False     #Check if the game has fully ended
         self.screen = 'game'
+        self.draw_lines = False
     
     def title_screen(self):
         pass
@@ -57,6 +58,7 @@ class Driver():
     
     def start_launch(self):
         self.launch = True
+        self.draw_lines = False
         for player in self.players:
             for unit in player.units:
                 unit.launch_power()
@@ -138,7 +140,7 @@ class Driver():
             remove = []
             for key in unit.collided: 
                 unit.collided[key] += 1
-                if unit.collided[key] >= 8: #8 frame cooldown
+                if unit.collided[key] >= 20: #8 frame cooldown
                     remove.append(key) #the keys to remove are appended to a list
                                        #and then removed after because you can't do it
                                        #while the dict is being iterated through.
@@ -163,8 +165,7 @@ class Driver():
         #creates a raccoon at the fallen unit position
         r = Raccoon(x,y,pastry) #creates a raccoon
         r.set_images(pastry) #sets the animation set
-        self.raccoons.append(r)
-        
+        self.raccoons.append(r)  
    
     def units_fall(self):
         #detects when the units fall off and handles them
@@ -556,7 +557,7 @@ def draw():
     for players in admin.players:
         
         for unit in players.units:
-            if admin.status[int(players.team[1])-1] == 1:          #Draw line if player is making their turn
+            if admin.status[int(players.team[1])-1] == 1 or admin.draw_lines:          #Draw line if player is making their turn
                 screen.draw.line((unit.actor.x, unit.actor.y), (unit.linex, unit.liney), (50, 50, 50))
             if unit.mag_line_vect > unit.radius:
 
@@ -575,7 +576,7 @@ def draw():
             screen.draw.text(f"Player {i+1}'s turn", centerx = WIDTH/2, centery = 30)    
 
     if admin.status.count(2) == len(admin.status):           #Check if all indexes are 2 (aka if they're mid launching)
-        if admin.end_turn() and not admin.terminate_game:
+        if admin.end_turn() and not admin.terminate_game and not admin.draw_lines:
             screen.draw.text("Click R to continue", centerx = WIDTH/2, centery = HEIGHT/2)
             if keyboard.r and admin.status.count(2) == len(admin.status):
                 admin.shrink()
@@ -607,7 +608,8 @@ def update_status():
     
     if admin.status.count(2) == len(admin.status) - 1:
         admin.status[-1] = 2
-        admin.start_launch()
+        admin.draw_lines = True
+        clock.schedule_unique(admin.start_launch, 2)
 
     for i in range(len(admin.status), 0, -1):
         if admin.status[i - 1] == 2 and admin.status[i-1] != admin.status[-1]:           #If an index is 2, change the next index to 1 (aka passing the turn)
