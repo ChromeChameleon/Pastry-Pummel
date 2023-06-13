@@ -203,6 +203,19 @@ class Driver():
                         return False
         return True
     
+    def data_transfer(self):
+        '''
+        turn, positions, velocities, whos turn it is 
+        '''
+        data = [self.turns]
+        for player in self.players:
+            data.append(len(player.units))
+            for unit in player.units:
+                data.append((unit.x,unit.y))
+        
+        
+        print(data)
+        
     def game_over(self, player):
         '''
         Check if a player has lost
@@ -581,6 +594,7 @@ def draw():
             if keyboard.r and admin.status.count(2) == len(admin.status):
                 admin.shrink()
                 admin.next_turn()
+                admin.data_transfer()
                 print("next turn")
     screen.draw.text(f"Turn: {admin.turns}", centerx = WIDTH - 100, centery = 30)
     
