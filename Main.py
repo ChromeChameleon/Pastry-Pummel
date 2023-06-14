@@ -40,6 +40,7 @@ class Driver():
         self.actors = []
         self.players = []
         self.raccoons= []
+        self.eyes = []
         self.status = [0]
         
         self.cycle = 0
@@ -60,7 +61,7 @@ class Driver():
     
     def setupPlayers(self):
         '''
-        Creates the actors and the positions
+        Creates the actors and the positions of them
         '''
         starting_pos = 100 #yes ik very scuffed will be changed later
         for i in range(1,3): #two players as I don't want to go insane
@@ -72,8 +73,11 @@ class Driver():
         
         #creates the list of all players actors 
         self.setupActors()
+        
     def setupActors(self):
-         #list of all teams
+        """
+        creates a list of all actors of all units
+        """
         for i in range(len(self.players[0].units)): #creates a list of actors of the 2nd team
             self.actors.append(self.players[0].units[i])
         
@@ -81,10 +85,15 @@ class Driver():
             self.actors.append(self.players[1].units[i])
             
     def setupBoard(self,shrink_rate):
-        #setsup the game board
+        """
+        creates the gameboard
+        """
         self.board = Board(800,800,shrink_rate)
     
     def start_launch(self):
+        """
+        Sets all unit initial velocities and progresses the "turn"
+        """
         self.launch = True
         self.draw_lines = False
         for player in self.players:
@@ -94,6 +103,9 @@ class Driver():
     def end_turn(self):
         '''
         Checks if all units are stopped moving
+        
+        Returns
+        ---------
         returns True if all units are stopped
         returns False otherwise
         '''
@@ -119,23 +131,20 @@ class Driver():
                 unit.active_arrow = False
                 unit.linex = unit.x
                 unit.liney = unit.y
-
-    
+                
+        #spawns in eyes from 1 to 10 secs, random amount of times
+        for i in range(randint(0,6)):
+            clock.schedule(self.create_eyes,randint(1,10))
     def shrink(self):
+        """
+        Shrinks the playing area, and all units relative to their position on the board
+        """
         self.board.shrink_board()
         self.shrink_playerpos()
 
     def detect_collision(self):
         """
-        actors = [] #should make this a self variable as its required multiple times
-       
-        #list of all teams
-        #second list where values are removed
-        for i in range(len(self.players[0].units)): #creates a list of actors of the 2nd team
-            actors.append(self.players[0].units[i])
-        
-        for i in range(len(self.players[1].units)): #creates a list of actors of the 2nd team
-            actors.append(self.players[1].units[i])
+        Detects which units are colliding with which, as well as calculates thier vector components
         """
         colliders = self.actors.copy() #a list of units of both teams
         colliders.pop(0) # removes the first item in the list to prevent collidng with itself
@@ -176,11 +185,9 @@ class Driver():
                 unit.collided.pop(item)
         
     def shrink_playerpos(self):
-        #changes player position depending on size of board
-        #make this relative to the top left corner of the board class
-        #the area of the board (800^2): sqrt(64000*90%) = side length of the board after shrinkage (758.9)
-        #800 - the side length  = the coordinate of the top left corner
-        #shifts the units pos relative to the distance from the center
+        """
+        Moves the units position relative to the size of the game board
+        """
         for player in self.players:
             for unit in player.units:
                 unit.x = cx - (cx-unit.x)*self.board.shrink_rate #
@@ -189,21 +196,42 @@ class Driver():
                 #shifts units while not launching
                 unit.actor.x = unit.x
                 unit.actor.y = unit.y
+                
     def create_raccoon(self,x,y,pastry):
-        #creates a raccoon at the fallen unit position
-        r = Raccoon(x,y,pastry) #creates a raccoon
+        """
+        Creates a raccoon at the fallen unit position
+        """
+        r = Raccoon(x,y) #creates a raccoon
         r.set_images(pastry) #sets the animation set
-        self.raccoons.append(r)  
+        self.raccoons.append(r) #appends to list of raccoon objects
+         
+        
+    def create_eyes(self):
+        """
+        creates a eye object and set a random coord to it
+        """
+        #print("[Eye Spawned]")
+        e = Eyes()
+        e.actor.x = choice([randint(0,200),randint(1000,1200)])
+        e.actor.y = randint(0,1000)
+        self.eyes.append(e)
    
     def units_fall(self):
-        #detects when the units fall off and handles them
-        #edge of board
+        """
+        Handles when units fall of the edge of the board
+        
+        Returns
+        --------
+        returns False when ...
+        returns True otherwise
+        """
         #center = cx,cy
         #Left edge = cx - board.width/2 , right edge = cx + board.width/2
         #top edge = cy + board.width/2 , bottom edge = cy - board.width/2
         for player in self.players:
             for unit in player.units:
-                #print(self.board.width)
+                
+                #Horiztontal border
                 if unit.x < (cx-self.board.width/2) or unit.x > (cx+self.board.width/2):
 
                     if admin.status.count(0) != len(admin.status):
@@ -217,6 +245,8 @@ class Driver():
                         del unit
                     else:
                         return False
+                    
+                #Verticle border
                 elif unit.y > (cy+self.board.width/2) or unit.y < (cy-self.board.width/2):
                     if admin.status.count(0) != len(admin.status):
                         print(cy+self.board.width/2,cy-self.board.width/2)
@@ -260,17 +290,19 @@ class Player():
     -------------
     team: Str that represents which team the player is on
     units: a List that represents every unit that belongs to the player
+    ready_launch: a boolean representing if the player's turn is done
+    loser: a boolean representing whether or not all the players units are gone
     """
     
     def __init__(self,team):
         self.team = team #team eg player 1 or 2
-        self.units = [] # list of unit objects
+        self.units = [] 
         self.ready_launch = False
         self.loser = False
        
     def make_team(self, units,starting_pos):
         """takes the # of units and their starting positions and creates a team of units"""
-        pastries = ["cookie","c_roll","donut","eggtart"]
+        pastries = ["cookie","c_roll","donut","eggtart","penguinoes"]
         xpos = starting_pos
         ypos = 200
         for i in range(units):
@@ -285,7 +317,7 @@ class Player():
             if unit.mag_line_vect < unit.radius:           #Set a proper boundary in the future
                 self.ready_launch = False
                 return self.ready_launch
-        if keyboard.SPACE and admin.status[int(self.team[1])-1] == 1 and not self.ready_launch:                            #Change to a button in the future - keyboard.SPACE is temporary
+        if keyboard.SPACE and admin.status[int(self.team[1])-1] == 1 and not self.ready_launch: #Change to a button in the future - keyboard.SPACE is temporary
             print(self.team)
             self.ready_launch = True
             admin.status[int(self.team[1]) - 1] = 2
@@ -332,6 +364,7 @@ class Unit():
         self.collided = {}
         
     def __repr__(self):
+        """returns the name when called"""
         return self.name
     
     def update_line(self):
@@ -355,7 +388,10 @@ class Unit():
             self.line_angle = math.pi/2 #sets angle to pi/2 (90 deg) when vx = 0
         
     def launch_power(self):
-        #self.visible_mag_line = self.mag_line_vect - self.radius #visible magniutude
+        """
+        sets the unitial velocity/power of the units depending on the length of the line vector
+        """
+        #takes the ratio of radius/magnitude of line vector multiplied by power and the line vector to change the velocities
         if self.mag_line_vect != 0:
             ratio = self.radius / self.mag_line_vect
             x = self.line_vect[0] * (1-ratio) * powa
@@ -364,7 +400,7 @@ class Unit():
 
     def move(self):
         '''
-        moves the units coordinates by its current x and y velocities
+        moves the units and their actors coordinates by its current x and y velocities
         '''
         self.x += self.vx
         self.y += self.vy
@@ -373,7 +409,7 @@ class Unit():
         self.actor.y = self.y
     def update_v(self, vx, vy):
         '''
-        sets the x and y velocities of the unit to the given values,
+        Sets the x and y velocities of the unit to the given values,
         then finds the launch angle. It then makes a list which stores if the initial
         x and y launch velocities are positive or negative
         
@@ -448,9 +484,6 @@ class Unit():
             
             self.update_v(v1fx,v1fy)
             m2.update_v(v2fx,v2fy)
-#         print(self.vx,self.vy)
-#         print(m2.vx,m2.vy)
-
 
     def acceleration(self):
         '''
@@ -500,32 +533,46 @@ class Board():
         self.area = self.width*2
         self.shrink_rate = shrink_rate
         self.board = None
-        self.actor = Actor("icy",(WIDTH//2,HEIGHT//2))
+        self.actor = Actor("square",(WIDTH//2,HEIGHT//2))
     def shrink_board(self):
-        #make this relative to the top left corner of the board class
-        #the area of the board (800^2): sqrt(64000*90%) = side length of the board after shrinkage (758.9)
+        """
+        Shrinks the area of the board by the a certain percentage
+        """
         #800 - the side length  = the coordinate of the top left corner
         if self.actor.scale >= 0.1:
+            #scales down the board by the rate
             self.actor.scale *= self.shrink_rate
             
-            #updates the pos of the top left corner
+            #updates the area of the board
             self.area *= self.shrink_rate
             self.width = self.area*0.5
+            
+            #top left coord
             self.topx = 800-(self.area**0.5)
             self.topy = self.topx
             
 class Raccoon():
-    """trash panda"""
+    """Raccoon object
     
-    def __init__(self,x,y,pastry):
-        self.actor = Actor("penguinoes")
-        self.pastry = pastry
-        self.actor.images = ["penguinoes","donut 100x100 look at its glory"]
-        self.actor.fps = 6
+    Spawns when a unit falls off the edge of the board
+    
+    Attributes
+    ----------
+    actor: a actor object that represents the raccoon
+        fps: a int value that is the frame rate of the animations
+        x: a int value that represents the x position of the actor
+        y: a int value that represents the y position of the actor
+    
+    """
+    
+    def __init__(self,x,y):
+        self.actor = Actor("000")
+        self.actor.fps = 8 #8fps is much smoother
         self.actor.x = x
         self.actor.y = y
     
     def set_images(self,pastry):
+        """Changes the animation set depending on which pastry has fallen off"""
         if pastry == "cookie":
             self.actor.images = ['000', '001', '002', 'rc003', 'rc004', 'rc005', 'rc006', '007', '008', '009', '010']
         elif pastry == "c_roll":
@@ -536,8 +583,21 @@ class Raccoon():
             self.actor.images = ['000', '001', '002', 'ret003', 'ret004', 'ret005', 'ret006', '007', '008', '009', '010']
     
     def consume(self):
+        """Cycles through the animation sets to animate the raccoon"""
         self.actor.animate()
+        
 
+class Eyes():
+
+    def __init__(self):
+        self.actor = Actor('e014')
+        self.actor.images = ['e000', 'e001', 'e002', 'e003', 'e004', 'e005', 'e006', 'e007', 'e008', 'e009', 'e010', 'e011', 'e012', 'e013', 'e014','e015','e016']
+        self.actor.fps = 8
+        
+    def spawn_eyes(self):
+        self.actor.animate()
+            
+        
 def on_mouse_down(pos):
     "Turns active_arrow True if mouse is held down and if mouse position is colliding with unit"
     for player in admin.players:
@@ -575,11 +635,14 @@ def on_mouse_move(pos, rel, buttons):
 
 def draw():
     screen.clear()
-    screen.fill((50,100,150))
+    screen.fill((29, 29, 31)) #grey ish was (50,100,150)
     
+    #Draws the game board
     admin.board.actor.draw()
+    
+    #informative text for Positioning units
     if admin.status.count(0) == len(admin.status):
-        screen.draw.text("Select Your Characters!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (64, 0, 255))
+        screen.draw.text("Position Your Characters!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (64, 0, 255))
         
     #decides who is the winner
     for i in range(len(admin.players)):
@@ -594,28 +657,35 @@ def draw():
         elif admin.players[1].loser:
             screen.draw.text("Player 1 Wins!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (64, 0, 255))
             admin.terminate_game = True  
-
+    
+    #updates vector line visual, as well as unit highlight indicators
     for players in admin.players:
         
         for unit in players.units:
             #Draw line if player is making their turn
             if admin.status[int(players.team[1])-1] == 1 or admin.draw_lines:
-                a = Actor("arrow")
-                a.x = unit.linex
-                a.y = unit.liney
                 
-
-                if (unit.linex - unit.actor.x) != 0:
-                    a.angle = math.degrees(math.atan((unit.liney - unit.actor.y)/(unit.linex - unit.actor.x)))
-
-                elif (unit.linex - unit.actor.x) < 0:
-                    a.angle = -90
-                elif (unit.linex - unit.actor.x) > 0:
-                    a.angle = 90
-#            
-                print(a.angle)
-                a.draw()
+                """Draws an arrowhead on the tip of the line"""
+                a = Actor("arrow2")
+                a.x = unit.linex #arrow heads pos
+                a.y = unit.liney
+                dx = (unit.linex - unit.actor.x) #change in x position from center of unit to tip of line
+                dy = (unit.liney - unit.actor.y) #change in y position
+                
+                if dx != 0:
+                    a.angle = -1* math.degrees(math.atan(dy/dx)) #right side of unit  
+                    if dx < 0:
+                        a.angle += 180 #left side of unit
+                elif dx <= 0:
+                    a.angle = 180 #down
+                elif dx >= 0:
+                    a.angle = 90 #top
+                
+                #vector line
                 screen.draw.line((unit.actor.x, unit.actor.y), (unit.linex, unit.liney), (50, 50, 50))
+                #arrow
+                a.draw()
+               
                 
             if unit.mag_line_vect > unit.radius:
 
@@ -628,26 +698,36 @@ def draw():
                 screen.draw.filled_circle((unit.x,unit.y),27,(0,0,255))
 
             unit.actor.draw()
- 
+
+    #Informative text that represents the current players turn
     for i in range(len(admin.status)):
         if admin.status[i] == 1:
-            screen.draw.text(f"Player {i+1}'s turn", centerx = WIDTH/2, centery = 30)    
+            screen.draw.text(f"Player {i+1}'s turn", centerx = WIDTH/2, centery = 40,fontsize = 80)    
 
     if admin.status.count(2) == len(admin.status):           #Check if all indexes are 2 (aka if they're mid launching)
         if admin.end_turn() and not admin.terminate_game and not admin.draw_lines:
             screen.draw.text("Click R to continue", centerx = WIDTH/2, centery = HEIGHT/2, color = (64, 0, 255))
+            
+            #Progresses to next turn
             if keyboard.r and admin.status.count(2) == len(admin.status):
                 admin.shrink()
                 admin.next_turn()
                 admin.data_transfer()
                 print("next turn")
-    screen.draw.text(f"Turn: {admin.turns}", centerx = WIDTH - 100, centery = 30)
+    #turn indicator text            
+    screen.draw.text(f"TURN {admin.turns}", centerx = 100, centery = 40,fontsize = 50)
     
     #draws all the raccoons who eat the fallen pieces
     for raccoon in admin.raccoons:
         raccoon.actor.draw()
         raccoon.consume()
+        
     
+    for eye in admin.eyes:
+        eye.actor.draw()
+        eye.spawn_eyes()
+        if eye.actor.image == "e016":
+            admin.eyes.remove(eye)
 def change_key():
     '''
     Called through a clock.schedule to prevent multiple registrations of a key
@@ -677,6 +757,8 @@ def update_status():
 
 def update():
     #Start Game
+    
+    """updates units depending on player interaction"""
     for player in admin.players:
         player.commit()
         player.loser = admin.game_over(player)
@@ -684,8 +766,7 @@ def update():
             unit.update_line()
             if admin.launch:
                 unit.move()
-                unit.acceleration()
-                
+                unit.acceleration()          
     admin.detect_collision()
     admin.inc_collided_count()
     if admin.status.count(0) != len(admin.status):
