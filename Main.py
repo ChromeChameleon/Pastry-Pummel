@@ -721,7 +721,8 @@ def draw():
     for raccoon in admin.raccoons:
         raccoon.actor.draw()
         raccoon.consume()
-        
+        if raccoon.actor.image == "010":
+            admin.raccoons.remove(raccoon)
     
     for eye in admin.eyes:
         eye.actor.draw()
