@@ -5,14 +5,16 @@ import pgzrun
 from pgzhelper import *
 from random import *
 import math
-
+TITLE = "Pastry Pummel"
 WIDTH = 1200
 HEIGHT = 1000
 cx = WIDTH // 2 #x coord of centre of screen
 cy = HEIGHT // 2 # y coord of centre of screen
 uk = 0.01  #coefficient of friction
-max_arr_len = 200
-powa = 0.05
+max_arr_len = 200 #max length of the line
+powa = 0.05 #power multiplier for line vectors
+scenes = ["title","tutorial","game","end"] #possible game screens
+
 class Driver():
     '''
     Runs the code
@@ -33,7 +35,7 @@ class Driver():
         Stores the game's number of turns
     board: String / Object
         Initialized as a string but eventually stores a Board object
-    screen: String
+    scene: String
         Stores the current screen that the game is displaying
     '''
     def __init__(self):
@@ -47,17 +49,18 @@ class Driver():
         self.turns = 1
 
         self.board = ""
-        self.screen = 'game'
+        self.scene = 'title' #starting screen
         
         self.checking_key = False
         self.draw_lines = False
         self.launch = False
         self.terminate_game = False
-    
-    def title_screen(self):
+    def set_screen(self):
         pass
-    def game_screen(self):
-        pass
+#     def title_screen(self):
+#         pass
+#     def game_screen(self):
+#         pass
     
     def setupPlayers(self):
         '''
@@ -177,7 +180,7 @@ class Driver():
             remove = []
             for key in unit.collided: 
                 unit.collided[key] += 1
-                if unit.collided[key] >= 20: #8 frame cooldown
+                if unit.collided[key] >= 10: #8 frame cooldown
                     remove.append(key) #the keys to remove are appended to a list
                                        #and then removed after because you can't do it
                                        #while the dict is being iterated through.
@@ -235,7 +238,7 @@ class Driver():
                 if unit.x < (cx-self.board.width/2) or unit.x > (cx+self.board.width/2):
 
                     if admin.status.count(0) != len(admin.status):
-                        print(cx-self.board.width/2,cx+self.board.width/2)
+                        #print(cx-self.board.width/2,cx+self.board.width/2)
 
                         #spawn raccoons
                         self.create_raccoon(unit.x,unit.y,unit.pastry)
@@ -249,7 +252,7 @@ class Driver():
                 #Verticle border
                 elif unit.y > (cy+self.board.width/2) or unit.y < (cy-self.board.width/2):
                     if admin.status.count(0) != len(admin.status):
-                        print(cy+self.board.width/2,cy-self.board.width/2)
+                        #print(cy+self.board.width/2,cy-self.board.width/2)
 
                          #spawn raccoons
                         self.create_raccoon(unit.x,unit.y,unit.pastry)
@@ -567,7 +570,7 @@ class Raccoon():
     
     def __init__(self,x,y):
         self.actor = Actor("000")
-        self.actor.fps = 8 #8fps is much smoother
+        self.actor.fps = 6 #8fps is much smoother
         self.actor.x = x
         self.actor.y = y
     
@@ -588,6 +591,9 @@ class Raccoon():
         
 
 class Eyes():
+    """
+    Eyes that periodically appear on the screen
+    """
 
     def __init__(self):
         self.actor = Actor('e014')
@@ -595,15 +601,20 @@ class Eyes():
         self.actor.fps = 8
         
     def spawn_eyes(self):
+        """animates the actors"""
         self.actor.animate()
             
         
 def on_mouse_down(pos):
     "Turns active_arrow True if mouse is held down and if mouse position is colliding with unit"
-    for player in admin.players:
-        for unit in player.units:
-            if unit.actor.collidepoint(pos):
-                unit.active_arrow = True
+    print(pos)
+    if admin.scene == "title":
+        admin.scene = "tutorial"
+    if admin.scene == "game":
+        for player in admin.players:
+            for unit in player.units:
+                if unit.actor.collidepoint(pos):
+                    unit.active_arrow = True
 
 def on_mouse_up(pos, button):
     "Turns active_arrow False if mouse is lifted up"
@@ -635,100 +646,113 @@ def on_mouse_move(pos, rel, buttons):
 
 def draw():
     screen.clear()
-    screen.fill((29, 29, 31)) #grey ish was (50,100,150)
+    """TITLE SCREEN"""
+    if admin.scene == "title":
+        screen.blit("temp_title",(0,0))       
     
-    #Draws the game board
-    admin.board.actor.draw()
-    
-    #informative text for Positioning units
-    if admin.status.count(0) == len(admin.status):
-        screen.draw.text("Position Your Characters!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (64, 0, 255))
+    """TUTORIAL SCREEN"""   
+    if admin.scene == "tutorial":
+        screen.blit("penguinoes",(0,0))
         
-    #decides who is the winner
-    for i in range(len(admin.players)):
-        if admin.players[0].loser and admin.players[1].loser:
-            screen.draw.text("Everybody Loses :), the system wins", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (64, 0, 255))
-            admin.terminate_game = True
-            
-        elif admin.players[0].loser:
-            screen.draw.text("Player 2 Wins!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (64, 0, 255))
-            admin.terminate_game = True
-            
-        elif admin.players[1].loser:
-            screen.draw.text("Player 1 Wins!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (64, 0, 255))
-            admin.terminate_game = True  
-    
-    #updates vector line visual, as well as unit highlight indicators
-    for players in admin.players:
+    """GAME SCREEN"""
+    if admin.scene == "game":
+        screen.fill((29, 29, 31)) #grey ish was (50,100,150)
         
-        for unit in players.units:
-            #Draw line if player is making their turn
-            if admin.status[int(players.team[1])-1] == 1 or admin.draw_lines:
-                
-                """Draws an arrowhead on the tip of the line"""
-                a = Actor("arrow2")
-                a.x = unit.linex #arrow heads pos
-                a.y = unit.liney
-                dx = (unit.linex - unit.actor.x) #change in x position from center of unit to tip of line
-                dy = (unit.liney - unit.actor.y) #change in y position
-                
-                if dx != 0:
-                    a.angle = -1* math.degrees(math.atan(dy/dx)) #right side of unit  
-                    if dx < 0:
-                        a.angle += 180 #left side of unit
-                elif dx <= 0:
-                    a.angle = 180 #down
-                elif dx >= 0:
-                    a.angle = 90 #top
-                
-                #vector line
-                screen.draw.line((unit.actor.x, unit.actor.y), (unit.linex, unit.liney), (50, 50, 50))
-                #arrow
-                a.draw()
-               
-                
-            if unit.mag_line_vect > unit.radius:
-
-                screen.draw.text("Press SPACE to commit turn", centerx = WIDTH/2, centery = HEIGHT - 50)
+        #Draws the game board
+        admin.board.actor.draw()
+        
+        #informative text for Positioning units
+        if admin.status.count(0) == len(admin.status):
+            screen.draw.text("Position Your Characters!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (64, 0, 255))
             
-            #highlights players
-            if players.team == "p1":
-                screen.draw.filled_circle((unit.x,unit.y),27,(255,0,0))
-            elif players.team == "p2":
-                screen.draw.filled_circle((unit.x,unit.y),27,(0,0,255))
-
-            unit.actor.draw()
-
-    #Informative text that represents the current players turn
-    for i in range(len(admin.status)):
-        if admin.status[i] == 1:
-            screen.draw.text(f"Player {i+1}'s turn", centerx = WIDTH/2, centery = 40,fontsize = 80)    
-
-    if admin.status.count(2) == len(admin.status):           #Check if all indexes are 2 (aka if they're mid launching)
-        if admin.end_turn() and not admin.terminate_game and not admin.draw_lines:
-            screen.draw.text("Click R to continue", centerx = WIDTH/2, centery = HEIGHT/2, color = (64, 0, 255))
+        #decides who is the winner
+        for i in range(len(admin.players)):
+            if admin.players[0].loser and admin.players[1].loser:
+                screen.draw.text("Everybody Loses :), the system wins", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (64, 0, 255))
+                admin.terminate_game = True
+                
+            elif admin.players[0].loser:
+                screen.draw.text("Player 2 Wins!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (64, 0, 255))
+                admin.terminate_game = True
+                
+            elif admin.players[1].loser:
+                screen.draw.text("Player 1 Wins!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (64, 0, 255))
+                admin.terminate_game = True  
+        
+        #updates vector line visual, as well as unit highlight indicators
+        for players in admin.players:
             
-            #Progresses to next turn
-            if keyboard.r and admin.status.count(2) == len(admin.status):
-                admin.shrink()
-                admin.next_turn()
-                admin.data_transfer()
-                print("next turn")
-    #turn indicator text            
-    screen.draw.text(f"TURN {admin.turns}", centerx = 100, centery = 40,fontsize = 50)
-    
-    #draws all the raccoons who eat the fallen pieces
-    for raccoon in admin.raccoons:
-        raccoon.actor.draw()
-        raccoon.consume()
-        if raccoon.actor.image == "010":
-            admin.raccoons.remove(raccoon)
-    
-    for eye in admin.eyes:
-        eye.actor.draw()
-        eye.spawn_eyes()
-        if eye.actor.image == "e016":
-            admin.eyes.remove(eye)
+            for unit in players.units:
+                #Draw line if player is making their turn
+                if admin.status[int(players.team[1])-1] == 1 or admin.draw_lines:
+                    
+                    """Draws an arrowhead on the tip of the line"""
+                    a = Actor("arrow2")
+                    a.x = unit.linex #arrow heads pos
+                    a.y = unit.liney
+                    dx = (unit.linex - unit.actor.x) #change in x position from center of unit to tip of line
+                    dy = (unit.liney - unit.actor.y) #change in y position
+                    
+                    if dx != 0:
+                        a.angle = -1* math.degrees(math.atan(dy/dx)) #right side of unit  
+                        if dx < 0:
+                            a.angle += 180 #left side of unit
+                    elif dx <= 0:
+                        a.angle = 180 #down
+                    elif dx >= 0:
+                        a.angle = 90 #top
+                    
+                    #vector line
+                    screen.draw.line((unit.actor.x, unit.actor.y), (unit.linex, unit.liney), (50, 50, 50))
+                    #arrow
+                    a.draw()
+                   
+                    
+                if unit.mag_line_vect > unit.radius:
+
+                    screen.draw.text("Press SPACE to commit turn", centerx = WIDTH/2, centery = HEIGHT - 50)
+                
+                #highlights players
+                if players.team == "p1":
+                    screen.draw.filled_circle((unit.x,unit.y),27,(255,0,0))
+                elif players.team == "p2":
+                    screen.draw.filled_circle((unit.x,unit.y),27,(0,0,255))
+
+                unit.actor.draw()
+
+        #Informative text that represents the current players turn
+        for i in range(len(admin.status)):
+            if admin.status[i] == 1:
+                screen.draw.text(f"Player {i+1}'s turn", centerx = WIDTH/2, centery = 40,fontsize = 80)    
+
+        if admin.status.count(2) == len(admin.status):           #Check if all indexes are 2 (aka if they're mid launching)
+            if admin.end_turn() and not admin.terminate_game and not admin.draw_lines:
+                screen.draw.text("Click R to continue", centerx = WIDTH/2, centery = HEIGHT/2, color = (64, 0, 255))
+                
+                #Progresses to next turn
+                if keyboard.r and admin.status.count(2) == len(admin.status):
+                    admin.shrink()
+                    admin.next_turn()
+                    admin.data_transfer()
+                    print("next turn")
+        #turn indicator text            
+        screen.draw.text(f"TURN {admin.turns}", centerx = 100, centery = 40,fontsize = 50)
+        
+        #draws all the raccoons who eat the fallen pieces
+        for raccoon in admin.raccoons:
+            raccoon.actor.draw()
+            raccoon.consume()
+            #removes after animation is done
+            if raccoon.actor.image == "010":
+                admin.raccoons.remove(raccoon)
+        
+        #draws all the eyes 
+        for eye in admin.eyes:
+            eye.actor.draw()
+            eye.spawn_eyes()
+            #removes after animation is done
+            if eye.actor.image == "e016":
+                admin.eyes.remove(eye)
 def change_key():
     '''
     Called through a clock.schedule to prevent multiple registrations of a key
@@ -759,20 +783,32 @@ def update_status():
 def update():
     #Start Game
     
-    """updates units depending on player interaction"""
-    for player in admin.players:
-        player.commit()
-        player.loser = admin.game_over(player)
-        for unit in player.units:
-            unit.update_line()
-            if admin.launch:
-                unit.move()
-                unit.acceleration()          
-    admin.detect_collision()
-    admin.inc_collided_count()
-    if admin.status.count(0) != len(admin.status):
-        admin.units_fall()
-    update_status()
+    """TITLE SCENE"""
+    if admin.scene == "title":
+        if keyboard.SPACE:
+            admin.scene = "game"
+    
+    """TUTORIAL"""
+    if admin.scene == "tutorial":
+        if keyboard.a:
+            admin.scene = "title"
+    
+    """GAME SCENE"""
+    if admin.scene == "game":
+        """updates units depending on player interaction"""
+        for player in admin.players:
+            player.commit()
+            player.loser = admin.game_over(player)
+            for unit in player.units:
+                unit.update_line()
+                if admin.launch:
+                    unit.move()
+                    unit.acceleration()          
+        admin.detect_collision()
+        admin.inc_collided_count()
+        if admin.status.count(0) != len(admin.status):
+            admin.units_fall()
+        update_status()
 def main():
     global admin
     admin = Driver()
