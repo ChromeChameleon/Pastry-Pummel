@@ -607,7 +607,6 @@ class Eyes():
         
 def on_mouse_down(pos):
     "Turns active_arrow True if mouse is held down and if mouse position is colliding with unit"
-    print(pos)
     if admin.scene == "title":
         admin.scene = "tutorial"
     if admin.scene == "game":
@@ -615,6 +614,20 @@ def on_mouse_down(pos):
             for unit in player.units:
                 if unit.actor.collidepoint(pos):
                     unit.active_arrow = True
+    
+        if rect_q.collidepoint(pos):
+            preset(1, [[500, 250], [350, 400], [350, HEIGHT - 400], [500, HEIGHT - 250]])
+        if rect_w.collidepoint(pos):
+            preset(1, [[400, 250], [400, 400], [400, HEIGHT - 400], [400, HEIGHT - 250]])
+        if rect_e.collidepoint(pos):
+            preset(1, [[350, 250], [500, 400], [500, HEIGHT - 400], [350, HEIGHT - 250]])
+        if rect_p.collidepoint(pos):
+            preset(2, [[700, 250], [850, 400], [850, HEIGHT - 400], [700, HEIGHT - 250]])
+        if rect_o.collidepoint(pos):
+            preset(2, [[800, 250], [800, 400], [800, HEIGHT - 400], [800, HEIGHT - 250]])
+        if rect_i.collidepoint(pos):
+            preset(2, [[850, 250], [700, 400], [700, HEIGHT - 400], [850, HEIGHT - 250]])
+    
 
 def on_mouse_up(pos, button):
     "Turns active_arrow False if mouse is lifted up"
@@ -644,6 +657,13 @@ def on_mouse_move(pos, rel, buttons):
                     unit.linex = unit.actor.x
                     unit.liney = unit.actor.y
 
+rect_q = Rect((200, 800), (100, 100))
+rect_w = Rect((300, 800), (100, 100))
+rect_e = Rect((400, 800), (100, 100))
+rect_p = Rect((WIDTH - 200 - 100, 800), (100, 100))
+rect_o = Rect((WIDTH - 300 - 100, 800), (100, 100))
+rect_i = Rect((WIDTH - 400 - 100, 800), (100, 100))
+
 def draw():
     screen.clear()
     """TITLE SCREEN"""
@@ -657,14 +677,20 @@ def draw():
     """GAME SCREEN"""
     if admin.scene == "game":
         screen.fill((29, 29, 31)) #grey ish was (50,100,150)
-        
-        #Draws the game board
+
+    #Draws the game board
         admin.board.actor.draw()
         
         #informative text for Positioning units
         if admin.status.count(0) == len(admin.status):
             screen.draw.text("Position Your Characters!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (64, 0, 255))
-            
+            screen.draw.filled_rect(rect_q, (150, 50, 25))
+            screen.draw.filled_rect(rect_w, (200, 100, 50))
+            screen.draw.filled_rect(rect_e, (250, 150, 75))
+            screen.draw.filled_rect(rect_p, (25, 50, 150))
+            screen.draw.filled_rect(rect_o, (50, 100, 200))
+            screen.draw.filled_rect(rect_i, (75, 150, 250))
+
         #decides who is the winner
         for i in range(len(admin.players)):
             if admin.players[0].loser and admin.players[1].loser:
@@ -678,7 +704,8 @@ def draw():
             elif admin.players[1].loser:
                 screen.draw.text("Player 1 Wins!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (64, 0, 255))
                 admin.terminate_game = True  
-        
+    
+  
         #updates vector line visual, as well as unit highlight indicators
         for players in admin.players:
             
@@ -798,6 +825,7 @@ def update():
     #Start Game
     
 
+
     """TITLE SCENE"""
     if admin.scene == "title":
         if keyboard.SPACE:
@@ -825,7 +853,7 @@ def update():
         if admin.status.count(0) != len(admin.status):
             admin.units_fall()
         update_status()
-
+'''
         if keyboard.q:
             preset(1, [[350, 250], [500, 400], [500, HEIGHT - 400], [350, HEIGHT - 250]])
         if keyboard.w:
@@ -839,6 +867,7 @@ def update():
             preset(2, [[700, 250], [850, 400], [850, HEIGHT - 400], [700, HEIGHT - 250]])
         if keyboard.i:
             preset(2, [[800, 250], [800, 400], [800, HEIGHT - 400], [800, HEIGHT - 250]])
+'''
 
 def main():
     global admin
