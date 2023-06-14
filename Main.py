@@ -180,7 +180,7 @@ class Driver():
             remove = []
             for key in unit.collided: 
                 unit.collided[key] += 1
-                if unit.collided[key] >= 9: #8 frame cooldown
+                if unit.collided[key] >= 5: #5 frame cooldown seems to be the best (used to be 9)
                     remove.append(key) #the keys to remove are appended to a list
                                        #and then removed after because you can't do it
                                        #while the dict is being iterated through.
@@ -288,7 +288,11 @@ class Driver():
     def reset(self):
         print("hi")
         self.scene = "gameover"
+        #resets the win condition
+        self.terminate_game = False
+        
         self.players = []
+        self.actors = []
         self.launch = False
         self.status = [0]
         self.draw_lines = False
@@ -298,9 +302,6 @@ class Driver():
         self.setupPlayers()
         self.setupBoard(0.9)
       
-        
-        #resets the win condition
-        self.terminate_game = False
         self.scene = "game"
         
 class Player():
@@ -624,8 +625,16 @@ class Eyes():
         
 def on_mouse_down(pos):
     "Turns active_arrow True if mouse is held down and if mouse position is colliding with unit"
-    if admin.scene == "title":
+
+    #closes tutorial popup
+    if admin.scene == "tutorial":
+        admin.scene = "title"
+        
+    #open tutorial popup
+    if admin.scene == "title" and (450 < pos[0] < 750) and (670 < pos[1] < 770):
         admin.scene = "tutorial"
+        
+    #runs only when in game
     if admin.scene == "game":
         for player in admin.players:
             for unit in player.units:
@@ -681,17 +690,19 @@ rect_p = Rect((WIDTH - 200 - 100, 800), (100, 100))
 rect_o = Rect((WIDTH - 300 - 100, 800), (100, 100))
 rect_i = Rect((WIDTH - 400 - 100, 800), (100, 100))
 
-#straightLine = Actor("straightLine")
+rect_tutorial = Rect((450,670), (300,100))
 
 def draw():
     screen.clear()
     """TITLE SCREEN"""
     if admin.scene == "title":
         screen.blit("temp_title",(0,0))       
-    
+        screen.draw.filled_rect(rect_tutorial,("RED"))
+        screen.draw.text("How To Play",(475,700),color = "white",fontsize = 60)
     """TUTORIAL SCREEN"""   
     if admin.scene == "tutorial":
-        screen.blit("penguinoes",(0,0))
+        screen.blit("temp_title",(0,0))   
+        screen.blit("tutorial_popup",(200,300))
         
     """GAME SCREEN"""
     if admin.scene == "game":
@@ -798,19 +809,19 @@ def draw():
                 
         #draws all the raccoons who eat the fallen pieces
         for raccoon in admin.raccoons:
-            raccoon.actor.draw()
-            raccoon.consume()
-            #removes after animation is done
-            if raccoon.actor.image == "010":
-                admin.raccoons.remove(raccoon)
-        
+            if raccoon.actor.image != "010" or admin.terminate_game:
+                raccoon.actor.draw()
+                raccoon.consume()
+            
         #draws all the eyes 
         for eye in admin.eyes:
             eye.actor.draw()
             eye.spawn_eyes()
+            
             #removes after animation is done
             if eye.actor.image == "e016":
                 admin.eyes.remove(eye)
+                
 def change_key():
     '''
     Called through a clock.schedule to prevent multiple registrations of a key
@@ -863,10 +874,8 @@ def update():
             admin.scene = "game"
     
     """TUTORIAL"""
-    if admin.scene == "tutorial":
-        if keyboard.a:
-            admin.scene = "title"
-    
+    #in on_mouse_down
+        
     """GAME SCENE"""
     if admin.scene == "game":
        
