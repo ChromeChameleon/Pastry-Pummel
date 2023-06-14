@@ -469,7 +469,7 @@ class Unit():
         m2: unit object
             the unit that is being collided with
         '''
-        if m2 not in self.collided: #only collides if it wasn't recently collided with
+        if m2 not in self.collided and admin.launch == True: #only collides if it wasn't recently collided with
             self.collided[m2] = 0
             m1mass = self.mass
             m2mass = m2.mass
@@ -681,6 +681,8 @@ rect_p = Rect((WIDTH - 200 - 100, 800), (100, 100))
 rect_o = Rect((WIDTH - 300 - 100, 800), (100, 100))
 rect_i = Rect((WIDTH - 400 - 100, 800), (100, 100))
 
+#straightLine = Actor("straightLine")
+
 def draw():
     screen.clear()
     """TITLE SCREEN"""
@@ -702,12 +704,18 @@ def draw():
         if admin.status.count(0) == len(admin.status):
             screen.draw.text("Position Your Characters!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (64, 0, 255))
             screen.draw.filled_rect(rect_q, (150, 50, 25))
+            screen.blit("c_line", (200, 800))
             screen.draw.filled_rect(rect_w, (200, 100, 50))
+            screen.blit("straight_line", (300, 800))
             screen.draw.filled_rect(rect_e, (250, 150, 75))
+            screen.blit("d_line", (400, 800))
             screen.draw.filled_rect(rect_p, (25, 50, 150))
+            screen.blit("d_line", (WIDTH - 200 - 100, 800))
             screen.draw.filled_rect(rect_o, (50, 100, 200))
+            screen.blit("straight_line", (WIDTH - 300 - 100, 800))
             screen.draw.filled_rect(rect_i, (75, 150, 250))
-
+            screen.blit("c_line", (WIDTH - 400 - 100, 800))
+            
         #decides who is the winner
         for i in range(len(admin.players)):
             if admin.players[0].loser and admin.players[1].loser:
