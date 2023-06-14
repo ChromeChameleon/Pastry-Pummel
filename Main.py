@@ -756,6 +756,20 @@ def update_status():
             admin.status[i] = 1
             break
 
+def preset(p, mylist):
+    '''
+    Creates new set positions for a player's starting position
+    '''
+    i = 0
+    for unit in admin.players[p - 1].units:
+        unit.actor.x = mylist[i][0]
+        unit.actor.y = mylist[i][1]
+        unit.x = unit.actor.x
+        unit.y = unit.actor.y
+        unit.linex = unit.actor.x
+        unit.liney = unit.actor.y
+        i += 1
+
 def update():
     #Start Game
     
@@ -773,6 +787,22 @@ def update():
     if admin.status.count(0) != len(admin.status):
         admin.units_fall()
     update_status()
+
+    if keyboard.q:
+        preset(1, [[350, 250], [500, 400], [500, HEIGHT - 400], [350, HEIGHT - 250]])
+    if keyboard.w:
+        preset(1, [[500, 250], [350, 400], [350, HEIGHT - 400], [500, HEIGHT - 250]])
+    if keyboard.e:
+        preset(1, [[400, 250], [400, 400], [400, HEIGHT - 400], [400, HEIGHT - 250]])
+    
+    if keyboard.p:
+        preset(2, [[850, 250], [700, 400], [700, HEIGHT - 400], [850, HEIGHT - 250]])
+    if keyboard.o:
+        preset(2, [[700, 250], [850, 400], [850, HEIGHT - 400], [700, HEIGHT - 250]])
+    if keyboard.i:
+        preset(2, [[800, 250], [800, 400], [800, HEIGHT - 400], [800, HEIGHT - 250]])
+
+    
 def main():
     global admin
     admin = Driver()
