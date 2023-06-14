@@ -180,7 +180,7 @@ class Driver():
             remove = []
             for key in unit.collided: 
                 unit.collided[key] += 1
-                if unit.collided[key] >= 10: #8 frame cooldown
+                if unit.collided[key] >= 9: #8 frame cooldown
                     remove.append(key) #the keys to remove are appended to a list
                                        #and then removed after because you can't do it
                                        #while the dict is being iterated through.
@@ -284,8 +284,25 @@ class Driver():
         if player.units == []:
             return True
         return False
-                
+    
+    def reset(self):
+        print("hi")
+        self.scene = "gameover"
+        self.players = []
+        self.launch = False
+        self.status = [0]
+        self.draw_lines = False
+        self.checking_key = False
+        self.cycle = 0
+        self.turns = 1
+        self.setupPlayers()
+        self.setupBoard(0.9)
       
+        
+        #resets the win condition
+        self.terminate_game = False
+        self.scene = "game"
+        
 class Player():
     """the player itself
     
@@ -365,7 +382,7 @@ class Unit():
         self.active_arrow = False
         self.stopped = True
         self.collided = {}
-        
+
     def __repr__(self):
         """returns the name when called"""
         return self.name
@@ -765,6 +782,12 @@ def draw():
         #turn indicator text            
         screen.draw.text(f"TURN {admin.turns}", centerx = 100, centery = 40,fontsize = 50)
         
+        #replaying the game stuff
+        if admin.terminate_game:
+            screen.draw.text("PRESS R TO PLAY AGAIN", centerx = WIDTH/2, centery = HEIGHT/4, color = (64, 0, 255), fontsize = 50)
+            if keyboard.r:
+                admin.reset()
+                
         #draws all the raccoons who eat the fallen pieces
         for raccoon in admin.raccoons:
             raccoon.actor.draw()
@@ -791,7 +814,9 @@ def update_status():
     '''
     Called in update and runs through all the conditions required to update admin.status
     '''
-    if keyboard.SPACE and admin.status.count(1) != len(admin.status) and not admin.checking_key and admin.units_fall():   #Update status on if player is not gone, going, or ready
+    if keyboard.SPACE and admin.status.count(1) != len(admin.status) and not admin.checking_key and admin.units_fall():
+        print("bruh")
+        #Update status on if player is not gone, going, or ready
         admin.status[admin.cycle] = 1
         admin.cycle += 1
         admin.checking_key = True
@@ -824,8 +849,6 @@ def preset(p, mylist):
 def update():
     #Start Game
     
-
-
     """TITLE SCENE"""
     if admin.scene == "title":
         if keyboard.SPACE:
@@ -853,6 +876,7 @@ def update():
         if admin.status.count(0) != len(admin.status):
             admin.units_fall()
         update_status()
+
 '''
         if keyboard.q:
             preset(1, [[350, 250], [500, 400], [500, HEIGHT - 400], [350, HEIGHT - 250]])
