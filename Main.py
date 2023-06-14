@@ -180,7 +180,7 @@ class Driver():
             remove = []
             for key in unit.collided: 
                 unit.collided[key] += 1
-                if unit.collided[key] >= 10: #8 frame cooldown
+                if unit.collided[key] >= 9: #8 frame cooldown
                     remove.append(key) #the keys to remove are appended to a list
                                        #and then removed after because you can't do it
                                        #while the dict is being iterated through.
@@ -452,7 +452,7 @@ class Unit():
         m2: unit object
             the unit that is being collided with
         '''
-        if m2 not in self.collided: #only collides if it wasn't recently collided with
+        if m2 not in self.collided and admin.launch == True: #only collides if it wasn't recently collided with
             self.collided[m2] = 0
             m1mass = self.mass
             m2mass = m2.mass
