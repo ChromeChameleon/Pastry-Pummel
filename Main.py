@@ -736,7 +736,7 @@ def draw():
                 if admin.status[int(players.team[1])-1] == 1 or admin.draw_lines:
                     
                     """Draws an arrowhead on the tip of the line"""
-                    a = Actor("arrow2")
+                    a = Actor("arrow")
                     a.x = unit.linex #arrow heads pos
                     a.y = unit.liney
                     dx = (unit.linex - unit.actor.x) #change in x position from center of unit to tip of line
