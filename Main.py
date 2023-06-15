@@ -631,7 +631,7 @@ def on_mouse_down(pos):
         admin.scene = "title"
         
     #open tutorial popup
-    if admin.scene == "title" and (450 < pos[0] < 750) and (670 < pos[1] < 770):
+    if admin.scene == "title" and (425 < pos[0] < 725) and (720 < pos[1] < 820):
         admin.scene = "tutorial"
         
     #runs only when in game
@@ -690,18 +690,18 @@ rect_p = Rect((WIDTH - 200 - 100, 800), (100, 100))
 rect_o = Rect((WIDTH - 300 - 100, 800), (100, 100))
 rect_i = Rect((WIDTH - 400 - 100, 800), (100, 100))
 
-rect_tutorial = Rect((450,670), (300,100))
+rect_tutorial = Rect((425,720), (300,100))
 
 def draw():
     screen.clear()
     """TITLE SCREEN"""
     if admin.scene == "title":
-        screen.blit("temp_title",(0,0))       
+        screen.blit("title",(0,0))       
         screen.draw.filled_rect(rect_tutorial,("RED"))
-        screen.draw.text("How To Play",(475,700),color = "white",fontsize = 60)
+        screen.draw.text("How To Play",(450,750),color = "white",fontsize = 60)
     """TUTORIAL SCREEN"""   
     if admin.scene == "tutorial":
-        screen.blit("temp_title",(0,0))   
+        screen.blit("title",(0,0))   
         screen.blit("tutorial_popup",(200,300))
         
     """GAME SCREEN"""
