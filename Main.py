@@ -714,6 +714,7 @@ def draw():
         #informative text for Positioning units
         if admin.status.count(0) == len(admin.status):
             screen.draw.text("Position Your Characters!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (64, 0, 255))
+            screen.draw.text("Press SPACE To Start Once Positioned", centerx = WIDTH/2, centery = HEIGHT/1.5, fontsize = 40, color = (64, 0, 255))
             screen.draw.filled_rect(rect_q, (150, 50, 25))
             screen.blit("c_line", (200, 800))
             screen.draw.filled_rect(rect_w, (200, 100, 50))
@@ -773,7 +774,7 @@ def draw():
                     
                 if unit.mag_line_vect > unit.radius:
 
-                    screen.draw.text("Press SPACE to commit turn", centerx = WIDTH/2, centery = HEIGHT - 50)
+                    screen.draw.text("Press SPACE to commit turn once ready", centerx = WIDTH/2, centery = HEIGHT - 50)
                 
                 #highlights players
                 if players.team == "p1":
@@ -786,7 +787,11 @@ def draw():
         #Informative text that represents the current players turn
         for i in range(len(admin.status)):
             if admin.status[i] == 1:
-                screen.draw.text(f"Player {i+1}'s turn", centerx = WIDTH/2, centery = 40,fontsize = 80)    
+                if i+1 == 1:
+                    screen.draw.text("@Player 2, Look Away!", centerx = WIDTH/2, centery = 80)
+                    screen.draw.text(f"Player {i+1}'s turn", centerx = WIDTH/2, centery = 40,fontsize = 80, color = (255, 0, 0))    
+                else:
+                    screen.draw.text(f"Player {i+1}'s turn", centerx = WIDTH/2, centery = 40,fontsize = 80, color = (0, 0, 255))    
 
         if admin.status.count(2) == len(admin.status):           #Check if all indexes are 2 (aka if they're mid launching)
             if admin.end_turn() and not admin.terminate_game and not admin.draw_lines:
