@@ -727,22 +727,7 @@ def draw():
             screen.blit("straight_line", (WIDTH - 300 - 100, 800))
             screen.draw.filled_rect(rect_i, (75, 150, 250))
             screen.blit("c_line", (WIDTH - 400 - 100, 800))
-            
-        #decides who is the winner
-        for i in range(len(admin.players)):
-            if admin.players[0].loser and admin.players[1].loser:
-                screen.draw.text("Everybody Loses :), the system wins", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (64, 0, 255))
-                admin.terminate_game = True
-                
-            elif admin.players[0].loser:
-                screen.draw.text("Player 2 Wins!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (64, 0, 255))
-                admin.terminate_game = True
-                
-            elif admin.players[1].loser:
-                screen.draw.text("Player 1 Wins!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (64, 0, 255))
-                admin.terminate_game = True  
-    
-  
+
         #updates vector line visual, as well as unit highlight indicators
         for players in admin.players:
             
@@ -761,17 +746,18 @@ def draw():
                         a.angle = -1* math.degrees(math.atan(dy/dx)) #right side of unit  
                         if dx < 0:
                             a.angle += 180 #left side of unit
-                    elif dx <= 0:
-                        a.angle = 180 #down
-                    elif dx >= 0:
-                        a.angle = 90 #top
-                    
+                    elif dx == 0:
+                        if dy > 0:
+                            a.angle = -90 #down
+                        elif dy < 0:
+                            a.angle = 90 #top
+             
                     #vector line
                     screen.draw.line((unit.actor.x, unit.actor.y), (unit.linex, unit.liney), (50, 50, 50))
+                    
                     #arrow
                     a.draw()
-                   
-                    
+     
                 if unit.mag_line_vect > unit.radius:
 
                     screen.draw.text("Press SPACE to commit turn once ready", centerx = WIDTH/2, centery = HEIGHT - 50)
@@ -808,9 +794,23 @@ def draw():
         
         #replaying the game stuff
         if admin.terminate_game:
-            screen.draw.text("PRESS R TO PLAY AGAIN", centerx = WIDTH/2, centery = HEIGHT/4, color = (64, 0, 255), fontsize = 50)
+            screen.draw.text("PRESS R TO PLAY AGAIN", centerx = WIDTH/2, centery = HEIGHT/2+150, color = (255, 255, 255), fontsize = 50)
             if keyboard.r:
                 admin.reset()
+        
+        #decides who is the winner
+        for i in range(len(admin.players)):
+            if admin.players[0].loser and admin.players[1].loser:
+                screen.draw.text("Everybody Loses :), The Raccoons Win", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (255,255,255))
+                admin.terminate_game = True
+                
+            elif admin.players[0].loser:
+                screen.draw.text("Player 2 Wins!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (64, 0, 255))
+                admin.terminate_game = True
+                
+            elif admin.players[1].loser:
+                screen.draw.text("Player 1 Wins!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (255, 0, 64))
+                admin.terminate_game = True
                 
         #draws all the raccoons who eat the fallen pieces
         for raccoon in admin.raccoons:
@@ -826,6 +826,8 @@ def draw():
             #removes after animation is done
             if eye.actor.image == "e016":
                 admin.eyes.remove(eye)
+        
+        
                 
 def change_key():
     '''
