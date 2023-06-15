@@ -481,14 +481,6 @@ class Unit():
             v1ix -= v2ix
             v2ix = 0
             
-            v1fx = v1ix*((m1mass-m2mass)/(m1mass+m2mass))
-            v2fx = (2*m1mass*v1ix)/(m1mass+m2mass)
-            
-            #set back to global f.o.r
-            v1fx += m2.vx
-            v2fx += m2.vx
-            
-            
             #y direction
             v1iy = self.vy
             v2iy = m2.vy
@@ -496,12 +488,24 @@ class Unit():
             v1iy -= v2iy
             v2iy = 0
             
+            v1fx = v1ix*((m1mass-m2mass)/(m1mass+m2mass))
+            v2fx = (2*m1mass*v1ix)/(m1mass+m2mass)
+            
+            #set back to global f.o.r
+            v1fx += m2.vx
+            v2fx += m2.vy
+            
             v1fy = v1iy*((m1mass-m2mass)/(m1mass+m2mass))
             v2fy = (2*m1mass*v1iy)/(m1mass+m2mass)
             
             #set back to global f.o.r
             v1fy += m2.vy
             v2fy += m2.vy
+            
+            v1mag = math.sqrt(v1fx**2+v1fy**2)
+            
+            
+            
             
             self.update_v(v1fx,v1fy)
             m2.update_v(v2fx,v2fy)
