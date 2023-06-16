@@ -13,7 +13,7 @@ cy = HEIGHT // 2 # y coord of centre of screen
 uk = 0.01  #coefficient of friction
 max_arr_len = 200 #max length of the line
 powa = 0.05 #power multiplier for line vectors
-scenes = ["title","tutorial","game","end"] #possible game screens
+scenes = ["title","tutorial","game"] #possible game screens
 
 class Driver():
     '''
@@ -55,13 +55,7 @@ class Driver():
         self.draw_lines = False
         self.launch = False
         self.terminate_game = False
-    def set_screen(self):
-        pass
-#     def title_screen(self):
-#         pass
-#     def game_screen(self):
-#         pass
-    
+
     def setupPlayers(self):
         '''
         Creates the actors and the positions of them
@@ -72,7 +66,7 @@ class Driver():
             p.make_team(4,starting_pos) #creates 4 units
             self.players.append(p)
             self.status.append(0)
-            starting_pos = WIDTH - starting_pos #insane math
+            starting_pos = WIDTH - starting_pos 
         
         #creates the list of all players actors 
         self.setupActors()
@@ -161,16 +155,13 @@ class Driver():
             #cricle_collidepoints -> cricular hitbox that prevents vibrating and glitching however still overlap
             index = units.actor.collidelist_pixel(collactors) #returns the index of the collider #actor
             if index != -1: # -1 means not colliding 0 - onwards is just index of list
-                #print(units,colliders[index]) #prints the coords of first penguin, and #coords of second penguin
                 units.collision_calc(colliders[index]) # passes the second unit collided into the collision calc
             
             #removes items as to prevent collisions with itself
             if len(colliders) != 0:
                 colliders.pop(0) 
-                collactors.pop(0)
-             
-#             except: #for testing purposes as to not crash the code for no reason
-#                 print('error')
+                collactors.pop(0)   
+# 
     def inc_collided_count(self):
         '''
         increases the count of each unit that the unit has recently collided with
@@ -213,7 +204,6 @@ class Driver():
         """
         creates a eye object and set a random coord to it
         """
-        #print("[Eye Spawned]")
         e = Eyes()
         e.actor.x = choice([randint(0,200),randint(1000,1200)])
         e.actor.y = randint(0,1000)
@@ -225,7 +215,7 @@ class Driver():
         
         Returns
         --------
-        returns False when ...
+        returns False when units aren't falling
         returns True otherwise
         """
         #center = cx,cy
@@ -238,8 +228,7 @@ class Driver():
                 if unit.x < (cx-self.board.width/2) or unit.x > (cx+self.board.width/2):
 
                     if admin.status.count(0) != len(admin.status):
-                        #print(cx-self.board.width/2,cx+self.board.width/2)
-
+                        
                         #spawn raccoons
                         self.create_raccoon(unit.x,unit.y,unit.pastry)
 
@@ -252,7 +241,6 @@ class Driver():
                 #Verticle border
                 elif unit.y > (cy+self.board.width/2) or unit.y < (cy-self.board.width/2):
                     if admin.status.count(0) != len(admin.status):
-                        #print(cy+self.board.width/2,cy-self.board.width/2)
 
                          #spawn raccoons
                         self.create_raccoon(unit.x,unit.y,unit.pastry)
@@ -274,9 +262,6 @@ class Driver():
             for unit in player.units:
                 data.append((unit.x,unit.y))
         
-        
-        print(data)
-        
     def game_over(self, player):
         '''
         Check if a player has lost
@@ -286,11 +271,13 @@ class Driver():
         return False
     
     def reset(self):
-        print("hi")
+
         self.scene = "gameover"
+        
         #resets the win condition
         self.terminate_game = False
         
+        #resets all variables 
         self.players = []
         self.actors = []
         self.launch = False
@@ -301,7 +288,8 @@ class Driver():
         self.turns = 1
         self.setupPlayers()
         self.setupBoard(0.9)
-      
+        
+        #return to game
         self.scene = "game"
         
 class Player():
@@ -339,7 +327,6 @@ class Player():
                 self.ready_launch = False
                 return self.ready_launch
         if keyboard.SPACE and admin.status[int(self.team[1])-1] == 1 and not self.ready_launch: #Change to a button in the future - keyboard.SPACE is temporary
-            print(self.team)
             self.ready_launch = True
             admin.status[int(self.team[1]) - 1] = 2
             
@@ -351,18 +338,15 @@ class Unit():
     y: Int value that represents the y position of the unit
     vx: Int value that represents the x speed of the unit
     vy: Int value that represents the y speed of the unit
-    angle:
-    launch_dir:
-    mass
-    radius
-    colour
+    mass: Int values that represents the mass of the unit
+    radius: Int value that is the radius of the unit (in pixels)
     name: Str value to identify the unit
     linex: the x position of the units launch line
     liney: the y position of the units launch line
     line_vect: Stores the vector components of the line relative to the unit's position
     mag_line_vect: Stores the magnitude of the line vector
     collided: a dictionary which stores the units that were recntly collided with (as the
-    key) and the amount of frames since that collision as the value
+            key) and the amount of frames since that collision as the value
     '''
     def __init__(self, x, y, mass, actor,name):
         self.name = name
@@ -540,8 +524,6 @@ class Unit():
 
         if self.vx == 0 and self.vy == 0:
             self.stopped = True
-        #print(self.vx,self.vy)
-
 
 class Board():
     """the game board
@@ -682,7 +664,9 @@ def on_mouse_move(pos, rel, buttons):
                     unit.y = unit.actor.y
                     unit.linex = unit.actor.x
                     unit.liney = unit.actor.y
+#various rectangles
 
+#pre game screen
 rect_q = Rect((200, 800), (100, 100))
 rect_w = Rect((300, 800), (100, 100))
 rect_e = Rect((400, 800), (100, 100))
@@ -690,6 +674,7 @@ rect_p = Rect((WIDTH - 200 - 100, 800), (100, 100))
 rect_o = Rect((WIDTH - 300 - 100, 800), (100, 100))
 rect_i = Rect((WIDTH - 400 - 100, 800), (100, 100))
 
+#title screen
 rect_tutorial = Rect((425,720), (300,100))
 
 def draw():
@@ -715,12 +700,16 @@ def draw():
         if admin.status.count(0) == len(admin.status):
             screen.draw.text("Position Your Characters!", centerx = WIDTH/2, centery = HEIGHT/2, fontsize = 50, color = (64, 0, 255))
             screen.draw.text("Press SPACE To Start Once Positioned", centerx = WIDTH/2, centery = HEIGHT/1.5, fontsize = 40, color = (64, 0, 255))
+            
+            #Player 1
             screen.draw.filled_rect(rect_q, (150, 50, 25))
             screen.blit("c_line", (200, 800))
             screen.draw.filled_rect(rect_w, (200, 100, 50))
             screen.blit("straight_line", (300, 800))
             screen.draw.filled_rect(rect_e, (250, 150, 75))
             screen.blit("d_line", (400, 800))
+            
+            #Player 2
             screen.draw.filled_rect(rect_p, (25, 50, 150))
             screen.blit("d_line", (WIDTH - 200 - 100, 800))
             screen.draw.filled_rect(rect_o, (50, 100, 200))
@@ -788,7 +777,7 @@ def draw():
                     admin.shrink()
                     admin.next_turn()
                     admin.data_transfer()
-                    print("next turn")
+
         #turn indicator text            
         screen.draw.text(f"TURN {admin.turns}", centerx = 100, centery = 40,fontsize = 50)
         
@@ -841,7 +830,7 @@ def update_status():
     Called in update and runs through all the conditions required to update admin.status
     '''
     if keyboard.SPACE and admin.status.count(1) != len(admin.status) and not admin.checking_key and admin.units_fall():
-        print("bruh")
+
         #Update status on if player is not gone, going, or ready
         admin.status[admin.cycle] = 1
         admin.cycle += 1
@@ -901,7 +890,7 @@ def update():
             admin.units_fall()
         update_status()
 
-'''
+'''represent the keyboard buttons that dont work and shouldnt be here
         if keyboard.q:
             preset(1, [[350, 250], [500, 400], [500, HEIGHT - 400], [350, HEIGHT - 250]])
         if keyboard.w:
@@ -918,6 +907,7 @@ def update():
 '''
 
 def main():
+    """Initializes the game objects"""
     global admin
     admin = Driver()
     admin.setupPlayers()
