@@ -1,3 +1,10 @@
+"""
+Authors: Kelvin, Nathan, Tino
+Date: 6/19/2023
+Description: a Pygamezero project inspired by the ios mobile game "Knockout". A 2-player versus game consisting of realistic
+             physics. The goal of the game is to knock the opponents pieces off the board. 
+"""
+
 import os
 os.environ['SDL_VIDEO_CENTERED'] = '1'
 
@@ -5,9 +12,12 @@ import pgzrun
 from pgzhelper import *
 from random import *
 import math
+
+#Read-only Variables
 TITLE = "Pastry Pummel"
 WIDTH = 1200
 HEIGHT = 1000
+
 cx = WIDTH // 2 #x coord of centre of screen
 cy = HEIGHT // 2 # y coord of centre of screen
 uk = 0.01  #coefficient of friction
@@ -17,7 +27,7 @@ scenes = ["title","tutorial","game"] #possible game screens
 
 class Driver():
     '''
-    Runs the code
+    Handles all game events and overall game manager
     
     Attributes:
     -----------
@@ -37,6 +47,14 @@ class Driver():
         Initialized as a string but eventually stores a Board object
     scene: String
         Stores the current screen that the game is displaying
+    checking_key: Boolean
+        A key in a dictionary the represents the units collided with
+    draw_lines: Boolean
+        represents whether or not to draw the line vectors
+    launch: Boolean
+        launch conditional check
+    terminate_game: Boolean
+        Whether the game is done or not
     '''
     def __init__(self):
         self.actors = []
@@ -60,8 +78,8 @@ class Driver():
         '''
         Creates the actors and the positions of them
         '''
-        starting_pos = 100 #yes ik very scuffed will be changed later
-        for i in range(1,3): #two players as I don't want to go insane
+        starting_pos = 100 
+        for i in range(1,3): #two players 
             p = Player(f"p{i}")
             p.make_team(4,starting_pos) #creates 4 units
             self.players.append(p)
@@ -293,14 +311,18 @@ class Driver():
         self.scene = "game"
         
 class Player():
-    """the player itself
+    """The player class which handles individual team events
     
     Attributes
     -------------
-    team: Str that represents which team the player is on
-    units: a List that represents every unit that belongs to the player
-    ready_launch: a boolean representing if the player's turn is done
-    loser: a boolean representing whether or not all the players units are gone
+    team: Str
+        that represents which team the player is on
+    units: List
+        that represents every unit that belongs to the player
+    ready_launch: boolean
+        representing if the player's turn is done
+    loser: boolean
+        representing whether or not all the players units are gone
     """
     
     def __init__(self,team):
@@ -331,22 +353,48 @@ class Player():
             admin.status[int(self.team[1]) - 1] = 2
             
 class Unit():
-    '''
+    '''The individual pastry class, which handles all events of the pastries
+
     Attributes
     ----------
-    x: Int value that represents the x position of the unit
-    y: Int value that represents the y position of the unit
-    vx: Int value that represents the x speed of the unit
-    vy: Int value that represents the y speed of the unit
-    mass: Int values that represents the mass of the unit
-    radius: Int value that is the radius of the unit (in pixels)
-    name: Str value to identify the unit
-    linex: the x position of the units launch line
-    liney: the y position of the units launch line
-    line_vect: Stores the vector components of the line relative to the unit's position
-    mag_line_vect: Stores the magnitude of the line vector
-    collided: a dictionary which stores the units that were recntly collided with (as the
-            key) and the amount of frames since that collision as the value
+    name: Str
+        name of the unit , includes the team its on
+    pastry: Str
+        name of the pastry the unit is using as it image
+    x: Int
+        value that represents the x position of the unit
+    y: Int
+        value that represents the y position of the unit
+    mass: Int
+        values that represents the mass of the unit
+    actor: Class
+        Stores the Actor class of the unit
+    actor.x: Int
+        x position of the actor
+    actor.y: Int
+        y position of the actor
+    vx: Int
+        value that represents the x speed of the unit
+    vy: Int
+        value that represents the y speed of the unit
+    
+    radius: Int
+        value that is the radius of the unit (in pixels)
+    linex: Int
+        the x position of the units launch line
+    liney: Int
+        the y position of the units launch line
+    line_vect: Tuple
+        Stores the vector components of the line relative to the unit's position
+    mag_line_vect: Int
+        Stores the magnitude of the line vector
+    active_arrow: Boolean
+        Whether if the units arrow is active
+    stopped: Boolean
+        Whether the unit has stopped all movement
+    collided: dictionary
+        which stores the units that were recntly collided with (as the key)
+        and the amount of frames since that collision as the value
     '''
     def __init__(self, x, y, mass, actor,name):
         self.name = name
@@ -555,16 +603,20 @@ class Board():
             self.topy = self.topx
             
 class Raccoon():
-    """Raccoon object
+    """Raccoon object 
     
     Spawns when a unit falls off the edge of the board
     
     Attributes
     ----------
-    actor: a actor object that represents the raccoon
-        fps: a int value that is the frame rate of the animations
-        x: a int value that represents the x position of the actor
-        y: a int value that represents the y position of the actor
+    actor: Class
+        a actor object that represents the raccoon
+    actor.fps: Int
+        value that is the frame rate of the animations
+    actor.x: Int
+        value that represents the x position of the actor
+    actor.y: Int
+        value that represents the y position of the actor
     
     """
     
@@ -593,6 +645,16 @@ class Raccoon():
 class Eyes():
     """
     Eyes that periodically appear on the screen
+    
+    Attributes
+    -----------
+    actor: Class
+        Actor object used for visuals
+    actor.images: List
+        all animations frames
+    actor.fps: Int
+        Framerate of the animation
+        
     """
 
     def __init__(self):
